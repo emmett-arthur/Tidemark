@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Tidemark — NYC Waterfront Capital Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -25,6 +25,9 @@
   --good: #22c55e;
   --excellent: #0ea5e9;
   --unknown: #475569;
+  --header-h: 52px;
+  --footer-h: 40px;
+  --sheet-peek: 72px; /* how much sheet peeks up on mobile by default */
 }
 
 html, body {
@@ -34,11 +37,12 @@ html, body {
   color: var(--text-primary);
   font-size: 14px;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* HEADER */
+/* ── HEADER ───────────────────────────────────── */
 #header {
-  height: 52px;
+  height: var(--header-h);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -46,39 +50,40 @@ html, body {
   justify-content: space-between;
   padding: 0 20px;
   flex-shrink: 0;
-  z-index: 10;
   position: relative;
+  z-index: 100;
 }
-.header-left { display: flex; align-items: center; gap: 14px; }
+.header-left { display: flex; align-items: center; gap: 12px; }
 .wordmark {
   font-family: 'Space Mono', monospace;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .tagline { font-size: 12px; color: var(--text-secondary); }
-.header-right { display: flex; gap: 8px; }
+.header-right { display: flex; gap: 6px; }
 .pill {
   background: var(--surface-el);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 20px;
 }
 
-/* MAIN */
+/* ── MAIN AREA ────────────────────────────────── */
 #main {
   display: flex;
-  height: calc(100vh - 52px - 40px);
+  height: calc(100vh - var(--header-h) - var(--footer-h));
+  position: relative;
 }
 
-/* MAP */
+/* ── MAP ──────────────────────────────────────── */
 #map-container {
   width: 60%;
   position: relative;
@@ -86,19 +91,19 @@ html, body {
 }
 #map { width: 100%; height: 100%; background: var(--bg); }
 
-/* FILTER BAR — top of map */
+/* Filter bar — top-centre of map */
 #filter-bar {
   position: absolute;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 500;
   display: flex;
-  gap: 4px;
+  gap: 3px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 4px;
+  padding: 3px;
 }
 .filter-btn {
   background: transparent;
@@ -108,28 +113,27 @@ html, body {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 500;
-  padding: 4px 11px;
+  padding: 5px 11px;
   cursor: pointer;
   letter-spacing: 0.04em;
   transition: all 0.12s;
   white-space: nowrap;
+  min-height: 32px;
 }
 .filter-btn:hover { color: var(--text-primary); border-color: var(--border); }
 .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-/* BOTTOM-LEFT MAP CONTROLS PANEL */
+/* Bottom-left controls */
 #map-bottom-left {
   position: absolute;
-  bottom: 24px;
+  bottom: 20px;
   left: 12px;
-  z-index: 1000;
+  z-index: 500;
   display: flex;
   flex-direction: column;
   gap: 6px;
   align-items: flex-start;
 }
-
-/* Layer toggles */
 #layer-controls {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -137,25 +141,20 @@ html, body {
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 .layer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 18px;
   cursor: pointer;
   user-select: none;
+  min-height: 28px;
 }
-.layer-label {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-/* Toggle switch */
+.layer-label { font-size: 11px; font-weight: 500; color: var(--text-primary); }
 .toggle-switch {
-  width: 28px;
-  height: 15px;
+  width: 28px; height: 15px;
   background: var(--border);
   border-radius: 8px;
   position: relative;
@@ -165,44 +164,32 @@ html, body {
 .toggle-switch.on { background: var(--accent); }
 .toggle-switch::after {
   content: '';
-  width: 11px;
-  height: 11px;
+  width: 11px; height: 11px;
   background: #fff;
   border-radius: 50%;
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 2px; left: 2px;
   transition: left 0.15s;
 }
 .toggle-switch.on::after { left: 15px; }
 
-/* LEGEND */
 #legend {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 9px 11px;
   font-size: 11px;
 }
 .legend-title {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 7px;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-secondary); margin-bottom: 6px;
 }
-.legend-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 4px;
-  color: var(--text-primary);
-}
+.legend-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: var(--text-primary); }
 .legend-row:last-child { margin-bottom: 0; }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
-/* SIDE PANEL */
+/* ── DESKTOP SIDE PANEL ───────────────────────── */
 #side-panel {
   width: 40%;
   background: var(--surface);
@@ -210,11 +197,10 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
   flex-shrink: 0;
 }
 
-/* TAB NAV */
+/* ── TAB NAV ──────────────────────────────────── */
 #panel-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
@@ -232,10 +218,14 @@ html, body {
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color 0.12s, border-color 0.12s;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* PANEL SCROLL AREA */
+/* ── PANEL SCROLL ─────────────────────────────── */
 #panel-scroll {
   flex: 1;
   overflow-y: auto;
@@ -245,7 +235,7 @@ html, body {
 #panel-scroll::-webkit-scrollbar-track { background: transparent; }
 #panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* PANEL STATES */
+/* ── PANEL STATES ─────────────────────────────── */
 .panel-state {
   padding: 20px;
   opacity: 0;
@@ -262,14 +252,11 @@ html, body {
   position: relative;
 }
 
-/* CONTEXT STRIP */
+/* ── CONTENT STYLES ───────────────────────────── */
 .context-blurb {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 16px;
+  font-size: 12px; color: var(--text-secondary);
+  line-height: 1.6; margin-bottom: 16px;
 }
-
 .data-sources {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -283,19 +270,14 @@ html, body {
   padding: 9px 10px;
 }
 .ds-name {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 3px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 3px;
 }
 .ds-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
 
-/* INLINE STATS */
 .inline-stats {
   display: flex;
-  gap: 0;
   background: var(--surface-el);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -303,35 +285,28 @@ html, body {
   margin-bottom: 20px;
 }
 .inline-stat {
-  flex: 1;
-  padding: 10px 8px;
+  flex: 1; padding: 10px 8px;
   text-align: center;
   border-right: 1px solid var(--border);
 }
 .inline-stat:last-child { border-right: none; }
 .is-label {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 3px;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-secondary); margin-bottom: 3px;
 }
 .is-value { font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1; }
 
-/* PANEL SECTION HEADER */
 .panel-section-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-secondary);
   margin-bottom: 10px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
 
-/* PROJECT ROWS */
+/* Project rows */
 .project-row {
   background: var(--surface-el);
   border: 1px solid var(--border);
@@ -341,44 +316,17 @@ html, body {
   cursor: pointer;
   transition: border-color 0.12s;
 }
-.project-row:hover { border-color: var(--accent); }
-.project-row-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
+.project-row:hover, .project-row:active { border-color: var(--accent); }
+.project-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
 .project-budget { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 .project-borough { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
-.budget-bar-wrap {
-  background: var(--border);
-  border-radius: 2px;
-  height: 3px;
-  margin-bottom: 8px;
-  overflow: hidden;
-}
-.budget-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent), #0369a1);
-}
-.project-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 3px;
-  line-height: 1.4;
-}
-.project-meta {
-  font-size: 11px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.budget-bar-wrap { background: var(--border); border-radius: 2px; height: 3px; margin-bottom: 8px; overflow: hidden; }
+.budget-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), #0369a1); }
+.project-name { font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; line-height: 1.4; }
+.project-meta { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; }
 .drill-link { font-size: 11px; color: var(--accent); font-weight: 500; }
 
-/* BRIDGE INSPECTION LIST */
+/* Bridge rows */
 .bridge-row {
   background: var(--surface-el);
   border: 1px solid var(--border);
@@ -390,36 +338,16 @@ html, body {
   align-items: center;
   gap: 10px;
   transition: border-color 0.12s;
+  min-height: 52px;
 }
-.bridge-row:hover { border-color: var(--accent); }
-.bridge-cond-bar {
-  width: 4px;
-  border-radius: 2px;
-  align-self: stretch;
-  flex-shrink: 0;
-  min-height: 32px;
-}
+.bridge-row:hover, .bridge-row:active { border-color: var(--accent); }
+.bridge-cond-bar { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; min-height: 32px; }
 .bridge-row-body { flex: 1; min-width: 0; }
-.bridge-row-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.bridge-row-name { font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bridge-row-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-.cond-badge {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
+.cond-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; }
 
-/* BACK BUTTON */
+/* Back button */
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -428,68 +356,42 @@ html, body {
   color: var(--accent);
   font-weight: 500;
   cursor: pointer;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   background: none;
   border: none;
   padding: 0;
   font-family: inherit;
+  min-height: 36px;
 }
 .back-btn:hover { opacity: 0.8; }
 
-/* ENTITY TYPE TAG */
+/* Entity tag */
 .entity-tag {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 5px;
+  display: flex; align-items: center; gap: 5px;
   margin-bottom: 6px;
 }
-
-/* ASSET DETAIL */
-.asset-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-.asset-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-.asset-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.asset-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+.asset-name { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.asset-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
 .risk-badge {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  margin-top: 2px;
+  display: inline-block; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+  white-space: nowrap; margin-top: 2px;
 }
 .section-label {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 9px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-secondary);
-  margin-bottom: 8px;
-  margin-top: 16px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px; margin-top: 16px;
+  padding-bottom: 5px; border-bottom: 1px solid var(--border);
 }
 .detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 7px 0;
   border-bottom: 1px solid rgba(30,45,64,0.5);
   font-size: 12px;
 }
@@ -499,167 +401,73 @@ html, body {
 .condition-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .amber-text { color: var(--fair); }
 .scour-warning {
-  background: rgba(234,179,8,0.1);
-  border: 1px solid rgba(234,179,8,0.3);
-  border-radius: 4px;
-  padding: 8px 10px;
-  font-size: 12px;
-  color: var(--fair);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 8px;
+  background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3);
+  border-radius: 4px; padding: 8px 10px;
+  font-size: 12px; color: var(--fair);
+  display: flex; align-items: center; gap: 7px; margin-top: 8px;
 }
-.scour-critical {
-  background: rgba(239,68,68,0.1);
-  border-color: rgba(239,68,68,0.3);
-  color: var(--critical);
-}
+.scour-critical { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--critical); }
 
-/* CHIPS */
 .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chip {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-primary);
-  transition: border-color 0.12s;
-  white-space: nowrap;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--surface-el); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 11px;
+  font-size: 11px; font-weight: 500;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  color: var(--text-primary); transition: border-color 0.12s;
+  white-space: nowrap; max-width: 220px;
+  overflow: hidden; text-overflow: ellipsis;
+  min-height: 32px;
 }
-.chip:hover { border-color: var(--accent); }
+.chip:hover, .chip:active { border-color: var(--accent); }
 
-/* PROJECT DETAIL */
-.project-detail-name {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.3;
-  margin-bottom: 5px;
-}
+.project-detail-name { font-size: 17px; font-weight: 600; color: var(--text-primary); line-height: 1.3; margin-bottom: 5px; }
 .project-detail-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
-.description-text {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
+.description-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
 .overdue { color: var(--fair); }
 
-/* BLURRED INTELLIGENCE SECTION */
+/* Blurred sections */
 .intel-section {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 8px;
+  background: var(--surface-el); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden; margin-top: 8px;
 }
 .intel-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
 }
-.intel-section-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
+.intel-section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
 .coming-soon-badge {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
-  background: rgba(14,165,233,0.1);
-  border: 1px solid rgba(14,165,233,0.25);
-  padding: 2px 7px;
-  border-radius: 10px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--accent); background: rgba(14,165,233,0.1);
+  border: 1px solid rgba(14,165,233,0.25); padding: 2px 7px; border-radius: 10px;
 }
-.intel-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(30,45,64,0.4);
-  font-size: 12px;
-}
+.intel-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(30,45,64,0.4); font-size: 12px; }
 .intel-row:last-child { border-bottom: none; }
 .intel-key { color: var(--text-secondary); font-weight: 500; }
-.intel-val {
-  color: var(--text-primary);
-  font-weight: 500;
-  filter: blur(5px);
-  user-select: none;
-  pointer-events: none;
-}
+.intel-val { color: var(--text-primary); font-weight: 500; filter: blur(5px); user-select: none; pointer-events: none; }
 
-/* CONTACT SECTION */
-.contact-section {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-top: 8px;
-}
-.contact-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(30,45,64,0.4);
-  font-size: 12px;
-}
+.contact-section { background: var(--surface-el); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 8px; }
+.contact-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(30,45,64,0.4); font-size: 12px; }
 .contact-row:last-child { border-bottom: none; }
 .contact-key { color: var(--text-secondary); font-weight: 500; }
 .contact-val { color: var(--text-primary); font-weight: 500; }
-.contact-val-blurred {
-  color: var(--text-secondary);
-  font-weight: 500;
-  filter: blur(4px);
-  user-select: none;
-  pointer-events: none;
-  letter-spacing: 0.02em;
-}
-.pro-note {
-  font-size: 10px;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  font-style: italic;
-}
+.contact-val-blurred { color: var(--text-secondary); font-weight: 500; filter: blur(4px); user-select: none; pointer-events: none; }
+.pro-note { font-size: 10px; color: var(--text-secondary); text-align: center; padding: 8px 12px; border-top: 1px solid var(--border); font-style: italic; }
 
-/* DIVIDER */
 .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 
-/* FOOTER */
+/* ── FOOTER ───────────────────────────────────── */
 #footer {
-  height: 40px;
+  height: var(--footer-h);
   background: var(--surface);
   border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; flex-shrink: 0;
 }
 .footer-text { font-size: 11px; color: var(--text-secondary); }
 .footer-text a { color: var(--accent); text-decoration: none; }
 
-/* Leaflet overrides */
+/* ── LEAFLET OVERRIDES ────────────────────────── */
 .leaflet-control-attribution { display: none !important; }
 .leaflet-container { background: var(--bg) !important; }
 .leaflet-tooltip {
@@ -674,13 +482,171 @@ html, body {
 }
 .leaflet-tooltip::before { display: none !important; }
 
-/* MOBILE */
+/* ══════════════════════════════════════════════════
+   MOBILE — Bottom Sheet Pattern
+   ══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  html, body { overflow: auto; }
-  #main { flex-direction: column; height: auto; }
-  #map-container { width: 100%; height: 50vh; }
-  #side-panel { width: 100%; height: auto; min-height: 50vh; }
-  #filter-bar { left: 12px; transform: none; font-size: 10px; }
+  :root {
+    --header-h: 48px;
+    --footer-h: 0px;
+    --sheet-peek: 68px;
+  }
+
+  html, body { overflow: hidden; height: 100%; }
+
+  /* Full-screen layout */
+  #main {
+    flex-direction: column;
+    height: calc(100vh - var(--header-h));
+    position: relative;
+  }
+
+  /* Map fills everything */
+  #map-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* Tagline hidden on mobile */
+  .tagline { display: none; }
+
+  /* Pills hidden on mobile */
+  .header-right { display: none; }
+
+  /* Footer hidden — no room, info is in sheet */
+  #footer { display: none; }
+
+  /* Filter bar — simplified, thumb-reachable at top */
+  #filter-bar {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    justify-content: center;
+    width: auto;
+  }
+  .filter-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    padding: 7px 6px;
+    min-height: 36px;
+  }
+
+  /* Layer controls — compact, bottom-right on mobile so thumb can reach */
+  #map-bottom-left {
+    bottom: calc(var(--sheet-peek) + 12px);
+    left: auto;
+    right: 12px;
+    align-items: flex-end;
+  }
+  #layer-controls { padding: 6px 8px; gap: 5px; }
+  .layer-label { font-size: 10px; }
+
+  /* Hide legend on mobile — too much noise */
+  #legend { display: none; }
+
+  /* ── BOTTOM SHEET ─────────────────────────── */
+  #side-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: calc(100% - 48px); /* full height minus header */
+    background: var(--surface);
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    /* Default: peeked — only show tab bar + drag handle */
+    transform: translateY(calc(100% - var(--sheet-peek)));
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+    /* prevent scrolling the body when sheet is dragged */
+    touch-action: none;
+  }
+  #side-panel.sheet-open {
+    transform: translateY(0);
+  }
+  #side-panel.sheet-detail {
+    transform: translateY(0);
+  }
+
+  /* Drag handle */
+  #sheet-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    touch-action: none;
+  }
+  #sheet-handle-bar {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+
+  /* Tab bar always visible in sheet header */
+  #panel-tabs {
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .panel-tab {
+    font-size: 11px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  /* Scroll area */
+  #panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .panel-state { padding: 16px; }
+
+  /* Back btn on mobile: looks like "← Map" breadcrumb */
+  .back-btn {
+    font-size: 13px;
+    min-height: 44px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+  }
+
+  /* Tighten up text for mobile */
+  .asset-name { font-size: 15px; }
+  .project-detail-name { font-size: 15px; }
+  .context-blurb { font-size: 12px; }
+  .data-sources { grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
+  .ds-card { padding: 8px; }
+  .ds-desc { font-size: 10px; }
+  .inline-stats { margin-bottom: 16px; }
+  .is-value { font-size: 14px; }
+
+  /* Project rows — slightly bigger tap targets */
+  .project-row { padding: 12px; margin-bottom: 7px; }
+  .bridge-row { min-height: 56px; }
+
+  /* Chips — slightly larger */
+  .chip { min-height: 36px; padding: 6px 12px; }
+}
+
+/* Very small screens */
+@media (max-width: 380px) {
+  .data-sources { grid-template-columns: 1fr; }
+  .filter-btn { font-size: 10px; padding: 6px 4px; }
 }
 </style>
 </head>
@@ -713,7 +679,7 @@ html, body {
       <button class="filter-btn" data-filter="scour">Scour</button>
     </div>
 
-    <!-- Bottom-left controls: layer toggles + legend -->
+    <!-- Bottom-left: layer toggles + legend -->
     <div id="map-bottom-left">
       <div id="layer-controls">
         <div class="layer-row" id="toggle-nbi-row">
@@ -730,15 +696,20 @@ html, body {
         <div class="legend-row"><div class="legend-dot" style="background:#ef4444"></div>Critical</div>
         <div class="legend-row"><div class="legend-dot" style="background:#f97316"></div>Poor</div>
         <div class="legend-row"><div class="legend-dot" style="background:#eab308"></div>Fair</div>
-        <div class="legend-row"><div class="legend-dot" style="background:#22c55e"></div>Good / Satisfactory</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#22c55e"></div>Good</div>
         <div class="legend-row"><div class="legend-dot" style="background:#0ea5e9"></div>Excellent</div>
         <div class="legend-row"><div class="legend-dot" style="background:#475569"></div>Unknown</div>
       </div>
     </div>
   </div>
 
-  <!-- SIDE PANEL -->
+  <!-- SIDE PANEL / BOTTOM SHEET -->
   <div id="side-panel">
+
+    <!-- Drag handle (mobile only) -->
+    <div id="sheet-handle">
+      <div id="sheet-handle-bar"></div>
+    </div>
 
     <!-- Tab nav -->
     <div id="panel-tabs">
@@ -749,73 +720,59 @@ html, body {
     <!-- Scroll area -->
     <div id="panel-scroll">
 
-      <!-- State A: Capital Pipeline (default) -->
+      <!-- State: Capital Pipeline -->
       <div id="panel-pipeline" class="panel-state active">
-        <p class="context-blurb">
-          Tidemark maps NYC waterfront infrastructure risk against active capital programs. Use it to identify which bridges need work, what's funded, who's procuring, and where inspection risk intersects with construction opportunity.
-        </p>
-
+        <p class="context-blurb">Tidemark maps NYC waterfront infrastructure risk against active capital programs — helping marine inspectors, engineers, and capital allocators find where risk and investment intersect.</p>
         <div class="data-sources">
           <div class="ds-card">
             <div class="ds-name">FHWA NBI 2025</div>
-            <div class="ds-desc">Federal bridge inventory — condition ratings, scour risk, underwater inspection records</div>
+            <div class="ds-desc">Federal bridge inventory — condition, scour, inspection records</div>
           </div>
           <div class="ds-card">
             <div class="ds-name">NYC DOT</div>
-            <div class="ds-desc">City-owned bridge inventory — 1,582 structures rated and located across all five boroughs</div>
+            <div class="ds-desc">City-owned bridges — 1,582 structures across five boroughs</div>
           </div>
           <div class="ds-card">
             <div class="ds-name">NYCEDC WFMMS</div>
-            <div class="ds-desc">Waterfront capital programs — active projects, budgets, procurement phases</div>
+            <div class="ds-desc">Waterfront capital programs — budgets and procurement phases</div>
           </div>
           <div class="ds-card">
             <div class="ds-name">NYC Open Data</div>
-            <div class="ds-desc">Agency procurement portals, project timelines and forecast completion dates</div>
+            <div class="ds-desc">Agency procurement portals and project timelines</div>
           </div>
         </div>
-
         <div class="inline-stats">
-          <div class="inline-stat">
-            <div class="is-label">Structures</div>
-            <div class="is-value">1,752</div>
-          </div>
-          <div class="inline-stat">
-            <div class="is-label">Critical / Poor</div>
-            <div class="is-value">37</div>
-          </div>
-          <div class="inline-stat">
-            <div class="is-label">Pipeline</div>
-            <div class="is-value">$8.1B</div>
-          </div>
+          <div class="inline-stat"><div class="is-label">Structures</div><div class="is-value">1,752</div></div>
+          <div class="inline-stat"><div class="is-label">Critical/Poor</div><div class="is-value">37</div></div>
+          <div class="inline-stat"><div class="is-label">Pipeline</div><div class="is-value">$8.1B</div></div>
         </div>
-
         <div class="panel-section-title">Active Capital Projects</div>
         <div id="project-list"></div>
       </div>
 
-      <!-- State B: Bridge Inspections tab -->
+      <!-- State: Bridge Inspections -->
       <div id="panel-bridges" class="panel-state">
         <div class="panel-section-title">NBI Federal Bridges — by condition</div>
         <div id="bridge-list"></div>
       </div>
 
-      <!-- State C: Asset Detail -->
+      <!-- State: Asset Detail -->
       <div id="panel-asset" class="panel-state">
         <button class="back-btn" id="asset-back">&#8592; Back</button>
         <div id="asset-content"></div>
       </div>
 
-      <!-- State D: Project Detail -->
+      <!-- State: Project Detail -->
       <div id="panel-project" class="panel-state">
         <button class="back-btn" id="project-back">&#8592; Back</button>
         <div id="project-content"></div>
       </div>
 
-    </div><!-- /panel-scroll -->
-  </div><!-- /side-panel -->
-</div><!-- /main -->
+    </div>
+  </div>
+</div>
 
-<!-- FOOTER -->
+<!-- FOOTER (desktop only) -->
 <div id="footer">
   <span class="footer-text">Tidemark is a concept by Kern &mdash; <a href="https://buildwithkern.com" target="_blank">buildwithkern.com</a></span>
   <span class="footer-text">Built on FHWA NBI 2025 &middot; NYC Open Data &middot; NYCEDC WFMMS standards</span>
@@ -1044,212 +1001,241 @@ const AGENCY_PORTAL = {
   'DDC':     'https://www.nyc.gov/site/ddc/business/bid-opportunities.page'
 };
 const CATEGORY_AGENCY = {
-  'Ferries': 'NYC DOT',
-  'Industrial Development': 'NYCEDC',
-  'Bridges, Streets and Roadways': 'NYC DOT',
-  'Bridges': 'NYC DOT',
-  'Sanitation': 'DSNY',
-  'Water Supply': 'DEP',
-  'Sewers': 'DEP',
-  'Parks': 'NYC DOT',
-  'Public Safety and Criminal Justice': 'DDC'
+  'Ferries':'NYC DOT','Industrial Development':'NYCEDC',
+  'Bridges, Streets and Roadways':'NYC DOT','Bridges':'NYC DOT',
+  'Sanitation':'DSNY','Water Supply':'DEP','Sewers':'DEP',
+  'Parks':'NYC DOT','Public Safety and Criminal Justice':'DDC'
 };
-
-// Fake-but-realistic blurred intel data per project index (rotated)
 const INTEL_DATA = [
-  {env:'CEQR Type II — No further review', bids:'3 packages', headcount:'~85 workers', variance:'+2.1%'},
-  {env:'CEQR Type I — EIS completed', bids:'5 packages', headcount:'~210 workers', variance:'-0.4%'},
-  {env:'CEQR Type II — No further review', bids:'2 packages', headcount:'~60 workers', variance:'+5.7%'},
-  {env:'CEQR Type I — EAS in progress', bids:'4 packages', headcount:'~130 workers', variance:'+1.2%'},
-  {env:'CEQR Type II — No further review', bids:'6 packages', headcount:'~175 workers', variance:'+3.8%'},
+  {env:'CEQR Type II — No further review',bids:'3 packages',headcount:'~85 workers',variance:'+2.1%'},
+  {env:'CEQR Type I — EIS completed',bids:'5 packages',headcount:'~210 workers',variance:'-0.4%'},
+  {env:'CEQR Type II — No further review',bids:'2 packages',headcount:'~60 workers',variance:'+5.7%'},
+  {env:'CEQR Type I — EAS in progress',bids:'4 packages',headcount:'~130 workers',variance:'+1.2%'},
+  {env:'CEQR Type II — No further review',bids:'6 packages',headcount:'~175 workers',variance:'+3.8%'},
 ];
 const CONTACT_DATA = [
-  {name:'Katherine Morales', phone:'(212) 748-3291', email:'kmorales@dot.nyc.gov'},
-  {name:'James Okonkwo', phone:'(212) 312-1847', email:'jokonkwo@edc.nyc.gov'},
-  {name:'Patricia Suarez', phone:'(718) 595-2063', email:'psuarez@dep.nyc.gov'},
-  {name:'Michael Tam', phone:'(212) 839-5511', email:'mtam@dot.nyc.gov'},
-  {name:'Sandra Vega', phone:'(718) 765-3392', email:'svega@dsny.nyc.gov'},
+  {name:'Katherine Morales',phone:'(212) 748-3291',email:'kmorales@dot.nyc.gov'},
+  {name:'James Okonkwo',phone:'(212) 312-1847',email:'jokonkwo@edc.nyc.gov'},
+  {name:'Patricia Suarez',phone:'(718) 595-2063',email:'psuarez@dep.nyc.gov'},
+  {name:'Michael Tam',phone:'(212) 839-5511',email:'mtam@dot.nyc.gov'},
+  {name:'Sandra Vega',phone:'(718) 765-3392',email:'svega@dsny.nyc.gov'},
 ];
+function getIntel(i){return INTEL_DATA[i%INTEL_DATA.length];}
+function getContact(i){return CONTACT_DATA[i%CONTACT_DATA.length];}
 
-function getIntel(idx) { return INTEL_DATA[idx % INTEL_DATA.length]; }
-function getContact(idx) { return CONTACT_DATA[idx % CONTACT_DATA.length]; }
+// ============================================================
+// MOBILE DETECTION
+// ============================================================
+const isMobile = () => window.innerWidth <= 768;
 
 // ============================================================
 // MAP INIT
 // ============================================================
-const map = L.map('map', { center:[40.71,-73.98], zoom:11, zoomControl:false });
-L.control.zoom({ position:'bottomright' }).addTo(map);
-
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+const map = L.map('map', {center:[40.71,-73.98], zoom:11, zoomControl:false});
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
   subdomains:'abcd', maxZoom:19
 }).addTo(map);
-
-const canvasRenderer = L.canvas({ padding:0.5 });
+const canvasRenderer = L.canvas({padding:0.5});
 
 // ============================================================
 // LAYER STATE
 // ============================================================
 let activeFilter = 'all';
-let nbiVisible = true;
-let cityVisible = true;
-let nbiMarkers = [];
-let cityMarkers = [];
+let nbiVisible = true, cityVisible = true;
+let nbiMarkers = [], cityMarkers = [];
 const nbiLayerGroup = L.layerGroup().addTo(map);
 const cityLayerGroup = L.featureGroup().addTo(map);
 
-// ============================================================
-// HELPERS
-// ============================================================
-function getColor(code) { return RISK_COLOR[code] || RISK_COLOR.u; }
-
-function shadeColor(hex, pct) {
-  const n = parseInt(hex.replace('#',''), 16);
-  const r = Math.max(0,Math.min(255,(n>>16)+pct));
-  const g = Math.max(0,Math.min(255,((n>>8)&0xff)+pct));
-  const b = Math.max(0,Math.min(255,(n&0xff)+pct));
+function getColor(c){return RISK_COLOR[c]||RISK_COLOR.u;}
+function shadeColor(hex,p){
+  const n=parseInt(hex.replace('#',''),16);
+  const r=Math.max(0,Math.min(255,(n>>16)+p));
+  const g=Math.max(0,Math.min(255,((n>>8)&0xff)+p));
+  const b=Math.max(0,Math.min(255,(n&0xff)+p));
   return '#'+(0x1000000+r*0x10000+g*0x100+b).toString(16).slice(1);
 }
-
-function matchesFilter(code, scour, filter) {
-  if (filter === 'all') return true;
-  if (filter === 'critical') return code === 'c';
-  if (filter === 'poor') return code === 'p';
-  if (filter === 'scour') return scour && scour.toLowerCase().includes('critical');
+function matchesFilter(code,scour,filter){
+  if(filter==='all') return true;
+  if(filter==='critical') return code==='c';
+  if(filter==='poor') return code==='p';
+  if(filter==='scour') return scour&&scour.toLowerCase().includes('critical');
   return true;
 }
-
-function applyFilter() {
-  nbiMarkers.forEach(({ marker, code, scour }) => {
-    const show = matchesFilter(code, scour, activeFilter);
-    marker.setStyle({ opacity: show ? 1 : 0, fillOpacity: show ? 0.85 : 0 });
+function applyFilter(){
+  nbiMarkers.forEach(({marker,code,scour})=>{
+    const show=matchesFilter(code,scour,activeFilter);
+    marker.setStyle({opacity:show?1:0,fillOpacity:show?0.85:0});
   });
-  cityMarkers.forEach(({ marker, code }) => {
-    const show = matchesFilter(code, null, activeFilter);
-    marker.setStyle({ opacity: show ? 1 : 0, fillOpacity: show ? 0.85 : 0 });
+  cityMarkers.forEach(({marker,code})=>{
+    const show=matchesFilter(code,null,activeFilter);
+    marker.setStyle({opacity:show?1:0,fillOpacity:show?0.85:0});
   });
 }
 
 // ============================================================
-// NBI LAYER
+// NBI MARKERS
 // ============================================================
-BRIDGES_NBI.forEach((rec) => {
-  const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
-  const color = getColor(code);
-  const marker = L.circleMarker([lat, lon], {
-    radius: 7,
-    fillColor: color,
-    color: shadeColor(color, -30),
-    weight: 1.5,
-    fillOpacity: 0.85,
-    opacity: 1
+BRIDGES_NBI.forEach(rec=>{
+  const[lat,lon,code,name,borough,substructure,lastUWI,scour]=rec;
+  const color=getColor(code);
+  const m=L.circleMarker([lat,lon],{
+    radius:7,fillColor:color,color:shadeColor(color,-30),
+    weight:1.5,fillOpacity:0.85,opacity:1
   });
-  const boroughName = BOROUGH_FULL[borough] || borough;
-  marker.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${boroughName}`, {
-    sticky: true, offset:[10,0]
-  });
-  marker.on('click', () => showAssetNBI(rec));
-  marker.addTo(nbiLayerGroup);
-  nbiMarkers.push({ marker, code, scour: scour||'' });
+  const bn=BOROUGH_FULL[borough]||borough;
+  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${bn}`,{sticky:true,offset:[10,0]});
+  m.on('click',()=>showAssetNBI(rec));
+  m.addTo(nbiLayerGroup);
+  nbiMarkers.push({marker:m,code,scour:scour||''});
 });
 
 // ============================================================
-// CITY LAYER
+// CITY MARKERS
 // ============================================================
-BRIDGES_CITY.forEach((rec) => {
-  const [lat, lon, code, name, borough, rating, year, budget] = rec;
-  const color = getColor(code);
-  const marker = L.circleMarker([lat, lon], {
-    renderer: canvasRenderer,
-    radius: 4,
-    fillColor: color,
-    color: shadeColor(color, -30),
-    weight: 1,
-    fillOpacity: 0.85,
-    opacity: 1
+BRIDGES_CITY.forEach(rec=>{
+  const[lat,lon,code,name,borough,rating,year,budget]=rec;
+  const color=getColor(code);
+  const m=L.circleMarker([lat,lon],{
+    renderer:canvasRenderer,radius:4,
+    fillColor:color,color:shadeColor(color,-30),
+    weight:1,fillOpacity:0.85,opacity:1
   });
-  const boroughName = BOROUGH_FULL[borough] || borough;
-  marker.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${boroughName}`, {
-    sticky: true, offset:[8,0]
-  });
-  marker.on('click', () => showAssetCity(rec));
-  marker.addTo(cityLayerGroup);
-  cityMarkers.push({ marker, code });
+  const bn=BOROUGH_FULL[borough]||borough;
+  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${bn}`,{sticky:true,offset:[8,0]});
+  m.on('click',()=>showAssetCity(rec));
+  m.addTo(cityLayerGroup);
+  cityMarkers.push({marker:m,code});
 });
 
 // ============================================================
 // LAYER TOGGLES
 // ============================================================
-function setupLayerToggle(rowId, tsId, layerGroup, getState, setState) {
-  document.getElementById(rowId).addEventListener('click', () => {
-    const on = !getState();
-    setState(on);
-    document.getElementById(tsId).classList.toggle('on', on);
-    if (on) map.addLayer(layerGroup); else map.removeLayer(layerGroup);
+function setupToggle(rowId,tsId,layerGroup,getV,setV){
+  document.getElementById(rowId).addEventListener('click',()=>{
+    const on=!getV(); setV(on);
+    document.getElementById(tsId).classList.toggle('on',on);
+    if(on) map.addLayer(layerGroup); else map.removeLayer(layerGroup);
   });
 }
-setupLayerToggle('toggle-nbi-row','ts-nbi', nbiLayerGroup, ()=>nbiVisible, v=>{ nbiVisible=v; });
-setupLayerToggle('toggle-city-row','ts-city', cityLayerGroup, ()=>cityVisible, v=>{ cityVisible=v; });
+setupToggle('toggle-nbi-row','ts-nbi',nbiLayerGroup,()=>nbiVisible,v=>{nbiVisible=v;});
+setupToggle('toggle-city-row','ts-city',cityLayerGroup,()=>cityVisible,v=>{cityVisible=v;});
 
 // ============================================================
 // FILTER BUTTONS
 // ============================================================
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    activeFilter = btn.dataset.filter;
+    activeFilter=btn.dataset.filter;
     applyFilter();
   });
 });
 
 // ============================================================
-// PANEL / TAB STATE
+// BOTTOM SHEET (mobile)
 // ============================================================
-let activeTab = 'pipeline'; // 'pipeline' | 'bridges'
-let prevPanel = 'panel-pipeline'; // track what to go back to
+const sheet = document.getElementById('side-panel');
+let sheetOpen = false;
 
-const ALL_PANELS = ['panel-pipeline','panel-bridges','panel-asset','panel-project'];
+function openSheet(){
+  sheetOpen = true;
+  sheet.classList.add('sheet-open');
+}
+function closeSheet(){
+  sheetOpen = false;
+  sheet.classList.remove('sheet-open','sheet-detail');
+}
+function openSheetDetail(){
+  sheetOpen = true;
+  sheet.classList.add('sheet-open','sheet-detail');
+}
 
-function showPanel(id) {
-  ALL_PANELS.forEach(p => {
-    const el = document.getElementById(p);
+// Drag handle tap toggles sheet
+document.getElementById('sheet-handle').addEventListener('click',()=>{
+  if(!isMobile()) return;
+  if(sheetOpen) closeSheet(); else openSheet();
+});
+
+// Swipe-to-close gesture
+let startY=0, startT=0;
+sheet.addEventListener('touchstart',e=>{
+  startY=e.touches[0].clientY;
+  startT=Date.now();
+},{passive:true});
+sheet.addEventListener('touchend',e=>{
+  if(!isMobile()) return;
+  const dy=e.changedTouches[0].clientY - startY;
+  const dt=Date.now()-startT;
+  // Quick downward swipe → close
+  if(dy>60 && dt<300 && e.changedTouches[0].clientY > (window.innerHeight*0.35)){
+    closeSheet();
+  }
+},{passive:true});
+
+// ============================================================
+// PANEL STATE MACHINE
+// ============================================================
+let activeTab = 'pipeline';
+let prevPanel = 'panel-pipeline';
+const ALL_PANELS=['panel-pipeline','panel-bridges','panel-asset','panel-project'];
+
+function showPanel(id){
+  ALL_PANELS.forEach(p=>{
+    const el=document.getElementById(p);
     el.classList.remove('active');
   });
   document.getElementById(id).classList.add('active');
-  document.getElementById('panel-scroll').scrollTop = 0;
+  document.getElementById('panel-scroll').scrollTop=0;
+
+  // Mobile: opening a detail panel opens sheet fully
+  if(isMobile()){
+    if(id==='panel-asset'||id==='panel-project'){
+      openSheetDetail();
+    } else {
+      openSheet();
+    }
+  }
 }
 
-// Tab click
-document.querySelectorAll('.panel-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+// Tab clicks
+document.querySelectorAll('.panel-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.panel-tab').forEach(t=>t.classList.remove('active'));
     tab.classList.add('active');
-    activeTab = tab.dataset.tab;
-    const panelId = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
-    prevPanel = panelId;
-    showPanel(panelId);
+    activeTab=tab.dataset.tab;
+    const pid=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+    prevPanel=pid;
+    showPanel(pid);
+    if(isMobile()) openSheet();
   });
 });
 
-document.getElementById('asset-back').addEventListener('click', () => {
+// Back buttons
+document.getElementById('asset-back').addEventListener('click',()=>{
   showPanel(prevPanel);
+  if(isMobile()) openSheet();
 });
-document.getElementById('project-back').addEventListener('click', () => {
+document.getElementById('project-back').addEventListener('click',()=>{
   showPanel(prevPanel);
+  if(isMobile()) openSheet();
 });
 
-// ============================================================
-// RENDER INTELLIGENCE PANEL
-// ============================================================
-const maxBudget = Math.max(...PROJECTS.map(p => p.budget));
+// Clicking the map closes the sheet on mobile
+map.on('click',()=>{ if(isMobile()) closeSheet(); });
 
-(function renderPipeline() {
-  const list = document.getElementById('project-list');
-  PROJECTS.forEach((proj, idx) => {
-    const pct = (proj.budget / maxBudget * 100).toFixed(1);
-    const row = document.createElement('div');
-    row.className = 'project-row';
-    row.innerHTML = `
+// ============================================================
+// RENDER: PIPELINE
+// ============================================================
+const maxBudget=Math.max(...PROJECTS.map(p=>p.budget));
+(function renderPipeline(){
+  const list=document.getElementById('project-list');
+  PROJECTS.forEach((proj,idx)=>{
+    const pct=(proj.budget/maxBudget*100).toFixed(1);
+    const row=document.createElement('div');
+    row.className='project-row';
+    row.innerHTML=`
       <div class="project-row-top">
         <span class="project-budget">${proj.budget_label}</span>
         <span class="project-borough">${proj.borough}</span>
@@ -1257,296 +1243,233 @@ const maxBudget = Math.max(...PROJECTS.map(p => p.budget));
       <div class="budget-bar-wrap"><div class="budget-bar-fill" style="width:${pct}%"></div></div>
       <div class="project-name">${proj.name}</div>
       <div class="project-meta">
-        <span>${proj.category} &middot; ${proj.phase} phase</span>
-        <span class="drill-link">View details &rarr;</span>
+        <span>${proj.category} &middot; ${proj.phase}</span>
+        <span class="drill-link">View &rarr;</span>
       </div>`;
-    row.addEventListener('click', () => showProjectDetail(idx));
+    row.addEventListener('click',()=>showProjectDetail(idx));
     list.appendChild(row);
   });
 })();
 
 // ============================================================
-// RENDER BRIDGE INSPECTIONS LIST
+// RENDER: BRIDGE LIST
 // ============================================================
-(function renderBridgeList() {
-  // Sort by severity: c, p, f, g, e, u
-  const order = {c:0, p:1, f:2, g:3, e:4, u:5};
-  const sorted = [...BRIDGES_NBI].sort((a,b) => (order[a[2]]||5) - (order[b[2]]||5));
-  const top = sorted.slice(0, 40); // show top 40
-
-  const list = document.getElementById('bridge-list');
-  top.forEach(rec => {
-    const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
-    const color = getColor(code);
-    const label = RISK_LABEL[code] || 'Unknown';
-    const boroughName = BOROUGH_FULL[borough] || borough;
-    const row = document.createElement('div');
-    row.className = 'bridge-row';
-    row.innerHTML = `
+(function renderBridgeList(){
+  const order={c:0,p:1,f:2,g:3,e:4,u:5};
+  const sorted=[...BRIDGES_NBI].sort((a,b)=>(order[a[2]]||5)-(order[b[2]]||5));
+  const list=document.getElementById('bridge-list');
+  sorted.slice(0,40).forEach(rec=>{
+    const[lat,lon,code,name,borough,substructure]=rec;
+    const color=getColor(code);
+    const label=RISK_LABEL[code]||'Unknown';
+    const bn=BOROUGH_FULL[borough]||borough;
+    const row=document.createElement('div');
+    row.className='bridge-row';
+    row.innerHTML=`
       <div class="bridge-cond-bar" style="background:${color}"></div>
       <div class="bridge-row-body">
         <div class="bridge-row-name">${name}</div>
-        <div class="bridge-row-meta">${boroughName} &middot; ${substructure || 'Not recorded'}</div>
+        <div class="bridge-row-meta">${bn} &middot; ${substructure||'Not recorded'}</div>
       </div>
       <span class="cond-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;
-    row.addEventListener('click', () => showAssetNBI(rec));
+    row.addEventListener('click',()=>showAssetNBI(rec));
     list.appendChild(row);
   });
 })();
+
+// ============================================================
+// HELPERS
+// ============================================================
+function condColor(val){
+  if(!val) return '#475569';
+  const v=val.toLowerCase();
+  if(v.includes('critical')||v==='c') return '#ef4444';
+  if(v.includes('poor')||v==='p') return '#f97316';
+  if(v.includes('fair')||v==='f') return '#eab308';
+  if(v.includes('satisfactory')||v.includes('good')) return '#22c55e';
+  if(v.includes('excellent')) return '#0ea5e9';
+  return '#475569';
+}
+function uwWarn(d){
+  if(!d||d==='Not recorded') return true;
+  const p=d.split('-');
+  if(p.length<2) return true;
+  return (new Date(2026,5,11)-new Date(parseInt(p[0]),parseInt(p[1])-1))/(1000*60*60*24*365.25)>6;
+}
+function formatDate(s){
+  if(!s) return 'TBD';
+  const[m,,y]=s.split('/');
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y;
+}
+function isOverdue(s){
+  if(!s) return false;
+  const[m,d,y]=s.split('/');
+  return new Date(parseInt(y),parseInt(m)-1,parseInt(d))<new Date(2026,5,11);
+}
+function getAgency(proj){return CATEGORY_AGENCY[proj.category]||'NYC DOT';}
+function getPortal(a){return AGENCY_PORTAL[a]||'https://www.nyc.gov/site/mocs/systems/about-passport.page';}
+
+const BRIDGE_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>`;
+const PROJECT_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`;
 
 // ============================================================
 // ASSET DETAIL — NBI
 // ============================================================
-function conditionColor(val) {
-  if (!val) return '#475569';
-  const v = val.toLowerCase();
-  if (v.includes('critical') || v==='c') return '#ef4444';
-  if (v.includes('poor') || v==='p') return '#f97316';
-  if (v.includes('fair') || v==='f') return '#eab308';
-  if (v.includes('satisfactory') || v.includes('good')) return '#22c55e';
-  if (v.includes('excellent')) return '#0ea5e9';
-  return '#475569';
-}
+function showAssetNBI(rec){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const[lat,lon,code,name,borough,substructure,lastUWI,scour]=rec;
+  const color=getColor(code);
+  const label=RISK_LABEL[code]||'Unknown';
+  const bn=BOROUGH_FULL[borough]||borough;
+  const sl=( scour||'').toLowerCase();
+  const isCrit=sl.includes('critical');
+  const isConcern=sl.includes('concern')||sl.includes('stable with');
+  const warn=uwWarn(lastUWI);
 
-function uwWarn(dateStr) {
-  if (!dateStr || dateStr==='Not recorded') return true;
-  const p = dateStr.split('-');
-  if (p.length < 2) return true;
-  const d = new Date(parseInt(p[0]), parseInt(p[1])-1);
-  return (new Date(2026,5,11) - d) / (1000*60*60*24*365.25) > 6;
-}
+  const nearby=PROJECTS.filter(p=>p.borough==='Citywide'||p.borough.includes(bn)).slice(0,3);
 
-function showAssetNBI(rec) {
-  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
-  const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
-  const riskColor = getColor(code);
-  const riskLabel = RISK_LABEL[code] || 'Unknown';
-  const boroughName = BOROUGH_FULL[borough] || borough;
-  const scourLower = (scour||'').toLowerCase();
-  const isScourCrit = scourLower.includes('critical');
-  const isScourConcern = scourLower.includes('concern') || scourLower.includes('stable with');
-  const warn = uwWarn(lastUWI);
-
-  const nearbyProjects = PROJECTS.filter(p =>
-    p.borough==='Citywide' || p.borough.includes(boroughName)
-  ).slice(0,3);
-
-  let html = `
-    <div class="entity-tag">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>
-      Bridge Inspection &middot; Federal (NBI)
-    </div>
+  let h=`
+    <div class="entity-tag">${BRIDGE_SVG} Bridge Inspection &middot; Federal (NBI)</div>
     <div class="asset-header-row">
       <div class="asset-name">${name}</div>
-      <span class="risk-badge" style="background:${riskColor}22;color:${riskColor};border:1px solid ${riskColor}44">${riskLabel.toUpperCase()}</span>
+      <span class="risk-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label.toUpperCase()}</span>
     </div>
-    <div class="asset-sub">${boroughName} &middot; NYSDOT</div>
-
+    <div class="asset-sub">${bn} &middot; NYSDOT</div>
     <div class="section-label">Condition</div>
     <div class="detail-row">
       <span class="detail-key">Substructure</span>
-      <span class="detail-val">
-        <span class="condition-dot" style="background:${conditionColor(substructure)}"></span>
-        ${substructure || 'Not recorded'}
-      </span>
+      <span class="detail-val"><span class="condition-dot" style="background:${condColor(substructure)}"></span>${substructure||'Not recorded'}</span>
     </div>
     <div class="detail-row">
       <span class="detail-key">Last UW Inspection</span>
-      <span class="detail-val ${warn?'amber-text':''}">${lastUWI || 'Not recorded'}${warn?' ⚠':''}</span>
+      <span class="detail-val ${warn?'amber-text':''}">${lastUWI||'Not recorded'}${warn?' ⚠':''}</span>
     </div>
-
     <div class="section-label">Scour</div>`;
 
-  if (isScourCrit) {
-    html += `<div class="scour-warning scour-critical">&#9888; Scour critical — structural monitoring required</div>`;
-  } else if (isScourConcern) {
-    html += `<div class="scour-warning">&#9888; ${scour}</div>`;
-  } else {
-    html += `<div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${scour||'Not recorded'}</span></div>`;
-  }
+  if(isCrit) h+=`<div class="scour-warning scour-critical">&#9888; Scour critical — monitoring required</div>`;
+  else if(isConcern) h+=`<div class="scour-warning">&#9888; ${scour}</div>`;
+  else h+=`<div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${scour||'Not recorded'}</span></div>`;
 
-  if (nearbyProjects.length > 0) {
-    html += `<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
-    nearbyProjects.forEach(p => {
-      const i = PROJECTS.indexOf(p);
-      html += `<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,26)}${p.name.length>26?'&hellip;':''}</span>`;
+  if(nearby.length){
+    h+=`<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
+    nearby.forEach(p=>{
+      const i=PROJECTS.indexOf(p);
+      h+=`<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,24)}${p.name.length>24?'&hellip;':''}</span>`;
     });
-    html += `</div>`;
+    h+=`</div>`;
   }
-
-  document.getElementById('asset-content').innerHTML = html;
+  h+=`<div style="height:16px"></div>`;
+  document.getElementById('asset-content').innerHTML=h;
   showPanel('panel-asset');
 }
 
 // ============================================================
 // ASSET DETAIL — City
 // ============================================================
-function showAssetCity(rec) {
-  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
-  const [lat, lon, code, name, borough, rating, year, budget] = rec;
-  const riskColor = getColor(code);
-  const riskLabel = RISK_LABEL[code] || 'Unknown';
-  const boroughName = BOROUGH_FULL[borough] || borough;
+function showAssetCity(rec){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const[lat,lon,code,name,borough,rating,year,budget]=rec;
+  const color=getColor(code);
+  const label=RISK_LABEL[code]||'Unknown';
+  const bn=BOROUGH_FULL[borough]||borough;
+  const nearby=PROJECTS.filter(p=>p.borough==='Citywide'||p.borough.includes(bn)).slice(0,3);
 
-  const nearbyProjects = PROJECTS.filter(p =>
-    p.borough==='Citywide' || p.borough.includes(boroughName)
-  ).slice(0,3);
-
-  let html = `
-    <div class="entity-tag">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>
-      Bridge Inspection &middot; City (DOT)
-    </div>
+  let h=`
+    <div class="entity-tag">${BRIDGE_SVG} Bridge Inspection &middot; City (DOT)</div>
     <div class="asset-header-row">
       <div class="asset-name">${name}</div>
-      <span class="risk-badge" style="background:${riskColor}22;color:${riskColor};border:1px solid ${riskColor}44">${riskLabel.toUpperCase()}</span>
+      <span class="risk-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label.toUpperCase()}</span>
     </div>
-    <div class="asset-sub">${boroughName} &middot; NYC DOT</div>
-
+    <div class="asset-sub">${bn} &middot; NYC DOT</div>
     <div class="section-label">Condition</div>
     <div class="detail-row">
       <span class="detail-key">Overall Rating</span>
-      <span class="detail-val"><span class="condition-dot" style="background:${riskColor}"></span>${rating||'Not recorded'}</span>
+      <span class="detail-val"><span class="condition-dot" style="background:${color}"></span>${rating||'Not recorded'}</span>
     </div>
-    <div class="detail-row">
-      <span class="detail-key">Year Built</span>
-      <span class="detail-val">${year||'Not recorded'}</span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-key">Replacement Cost Est.</span>
-      <span class="detail-val">${budget||'Not recorded'}</span>
-    </div>`;
+    <div class="detail-row"><span class="detail-key">Year Built</span><span class="detail-val">${year||'Not recorded'}</span></div>
+    <div class="detail-row"><span class="detail-key">Replacement Cost Est.</span><span class="detail-val">${budget||'Not recorded'}</span></div>`;
 
-  if (nearbyProjects.length > 0) {
-    html += `<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
-    nearbyProjects.forEach(p => {
-      const i = PROJECTS.indexOf(p);
-      html += `<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,26)}${p.name.length>26?'&hellip;':''}</span>`;
+  if(nearby.length){
+    h+=`<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
+    nearby.forEach(p=>{
+      const i=PROJECTS.indexOf(p);
+      h+=`<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,24)}${p.name.length>24?'&hellip;':''}</span>`;
     });
-    html += `</div>`;
+    h+=`</div>`;
   }
-
-  document.getElementById('asset-content').innerHTML = html;
+  h+=`<div style="height:16px"></div>`;
+  document.getElementById('asset-content').innerHTML=h;
   showPanel('panel-asset');
 }
 
 // ============================================================
 // PROJECT DETAIL
 // ============================================================
-function formatDate(dateStr) {
-  if (!dateStr) return 'TBD';
-  const [m,,y] = dateStr.split('/');
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[parseInt(m)-1]} ${y}`;
-}
+function showProjectDetail(idx){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const proj=PROJECTS[idx];
+  const agency=getAgency(proj);
+  const portal=getPortal(agency);
+  const overdue=isOverdue(proj.forecast_completion);
+  const dateDisplay=overdue
+    ?`<span class="overdue">${formatDate(proj.forecast_completion)} (overdue)</span>`
+    :formatDate(proj.forecast_completion);
 
-function isOverdue(dateStr) {
-  if (!dateStr) return false;
-  const [m,d,y] = dateStr.split('/');
-  return new Date(parseInt(y),parseInt(m)-1,parseInt(d)) < new Date(2026,5,11);
-}
+  const projBoroughs=proj.borough==='Citywide'
+    ?['M','B','Q','S','Bx']
+    :Object.entries(BOROUGH_FULL).filter(([k,v])=>proj.borough.includes(v)).map(([k])=>k);
+  const poorAssets=BRIDGES_NBI.filter(r=>(r[2]==='c'||r[2]==='p')&&projBoroughs.includes(r[4])).slice(0,4);
+  const intel=getIntel(idx);
+  const contact=getContact(idx);
 
-function getAgency(proj) { return CATEGORY_AGENCY[proj.category] || 'NYC DOT'; }
-function getPortal(agency) { return AGENCY_PORTAL[agency] || 'https://www.nyc.gov/site/mocs/systems/about-passport.page'; }
-
-function showProjectDetail(idx) {
-  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
-  const proj = PROJECTS[idx];
-  const agency = getAgency(proj);
-  const portal = getPortal(agency);
-  const overdue = isOverdue(proj.forecast_completion);
-  const dateStr = formatDate(proj.forecast_completion);
-  const dateDisplay = overdue
-    ? `<span class="overdue">${dateStr} (overdue)</span>`
-    : dateStr;
-
-  // Nearby poor NBI assets
-  const projBoroughs = proj.borough==='Citywide'
-    ? ['M','B','Q','S','Bx']
-    : Object.entries(BOROUGH_FULL).filter(([k,v])=>proj.borough.includes(v)).map(([k])=>k);
-  const poorAssets = BRIDGES_NBI.filter(r=>(r[2]==='c'||r[2]==='p')&&projBoroughs.includes(r[4])).slice(0,4);
-
-  const intel = getIntel(idx);
-  const contact = getContact(idx);
-
-  let html = `
-    <div class="entity-tag">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
-      Capital Project
-    </div>
+  let h=`
+    <div class="entity-tag">${PROJECT_SVG} Capital Project</div>
     <div class="project-detail-name">${proj.name}</div>
     <div class="project-detail-meta">${proj.budget_label} &middot; ${proj.borough} &middot; ${proj.category}</div>
     <p class="description-text">${proj.description}</p>
-
     <div class="section-label">Details</div>
     <div class="detail-row"><span class="detail-key">Phase</span><span class="detail-val">${proj.phase}</span></div>
-    <div class="detail-row"><span class="detail-key">Forecast completion</span><span class="detail-val">${dateDisplay}</span></div>
+    <div class="detail-row"><span class="detail-key">Forecast</span><span class="detail-val">${dateDisplay}</span></div>
     <div class="detail-row"><span class="detail-key">Agency</span><span class="detail-val">${agency}</span></div>`;
 
-  if (poorAssets.length > 0) {
-    html += `<div class="section-label">Nearby Assets in Poor Condition</div><div class="chips-wrap">`;
-    poorAssets.forEach(rec => {
-      const recIdx = BRIDGES_NBI.indexOf(rec);
-      const col = getColor(rec[2]);
-      html += `<span class="chip" onclick="showAssetNBI(BRIDGES_NBI[${recIdx}])"><span class="condition-dot" style="background:${col};min-width:8px"></span>${rec[3].substring(0,22)}${rec[3].length>22?'&hellip;':''}</span>`;
+  if(poorAssets.length){
+    h+=`<div class="section-label">Nearby Assets in Poor Condition</div><div class="chips-wrap">`;
+    poorAssets.forEach(rec=>{
+      const ri=BRIDGES_NBI.indexOf(rec);
+      const col=getColor(rec[2]);
+      h+=`<span class="chip" onclick="showAssetNBI(BRIDGES_NBI[${ri}])"><span class="condition-dot" style="background:${col};min-width:8px"></span>${rec[3].substring(0,22)}${rec[3].length>22?'&hellip;':''}</span>`;
     });
-    html += `</div>`;
+    h+=`</div>`;
   }
 
-  // Detailed Project Intelligence (blurred)
-  html += `
+  h+=`
     <hr class="divider">
     <div class="intel-section">
       <div class="intel-section-header">
         <span class="intel-section-title">Detailed Project Intelligence</span>
         <span class="coming-soon-badge">Coming Soon</span>
       </div>
-      <div class="intel-row">
-        <span class="intel-key">Environmental Review</span>
-        <span class="intel-val">${intel.env}</span>
-      </div>
-      <div class="intel-row">
-        <span class="intel-key">Bid Package Count</span>
-        <span class="intel-val">${intel.bids}</span>
-      </div>
-      <div class="intel-row">
-        <span class="intel-key">Est. Contractor Headcount</span>
-        <span class="intel-val">${intel.headcount}</span>
-      </div>
-      <div class="intel-row">
-        <span class="intel-key">Budget Variance</span>
-        <span class="intel-val">${intel.variance}</span>
-      </div>
+      <div class="intel-row"><span class="intel-key">Environmental Review</span><span class="intel-val">${intel.env}</span></div>
+      <div class="intel-row"><span class="intel-key">Bid Package Count</span><span class="intel-val">${intel.bids}</span></div>
+      <div class="intel-row"><span class="intel-key">Est. Contractor Headcount</span><span class="intel-val">${intel.headcount}</span></div>
+      <div class="intel-row"><span class="intel-key">Budget Variance</span><span class="intel-val">${intel.variance}</span></div>
     </div>
-
     <hr class="divider">
     <div class="section-label" style="margin-top:0">Contact &amp; Procurement</div>
     <div class="contact-section">
+      <div class="contact-row"><span class="contact-key">Lead Agency</span><span class="contact-val">${agency}</span></div>
       <div class="contact-row">
-        <span class="contact-key">Lead Agency</span>
-        <span class="contact-val">${agency}</span>
+        <span class="contact-key">Procurement</span>
+        <span class="contact-val"><a href="${portal}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none">Open portal &rarr;</a></span>
       </div>
-      <div class="contact-row">
-        <span class="contact-key">Procurement portal</span>
-        <span class="contact-val"><a href="${portal}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none">Open &rarr;</a></span>
-      </div>
-      <div class="contact-row">
-        <span class="contact-key">Project Manager</span>
-        <span class="contact-val-blurred">${contact.name}</span>
-      </div>
-      <div class="contact-row">
-        <span class="contact-key">Phone</span>
-        <span class="contact-val-blurred">${contact.phone}</span>
-      </div>
-      <div class="contact-row">
-        <span class="contact-key">Email</span>
-        <span class="contact-val-blurred">${contact.email}</span>
-      </div>
+      <div class="contact-row"><span class="contact-key">Project Manager</span><span class="contact-val-blurred">${contact.name}</span></div>
+      <div class="contact-row"><span class="contact-key">Phone</span><span class="contact-val-blurred">${contact.phone}</span></div>
+      <div class="contact-row"><span class="contact-key">Email</span><span class="contact-val-blurred">${contact.email}</span></div>
       <div class="pro-note">Full contact directory available in Tidemark Pro</div>
     </div>
-    <div style="height:24px"></div>`;
+    <div style="height:32px"></div>`;
 
-  document.getElementById('project-content').innerHTML = html;
+  document.getElementById('project-content').innerHTML=h;
   showPanel('panel-project');
 }
 </script>
