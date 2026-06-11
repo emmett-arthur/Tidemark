@@ -27,7 +27,6 @@
   --unknown: #475569;
   --header-h: 52px;
   --footer-h: 40px;
-  --sheet-peek: 72px; /* how much sheet peeks up on mobile by default */
 }
 
 html, body {
@@ -40,7 +39,7 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── HEADER ───────────────────────────────────── */
+/* ── HEADER ─────────────────────────────────── */
 #header {
   height: var(--header-h);
   background: var(--surface);
@@ -56,34 +55,27 @@ html, body {
 .header-left { display: flex; align-items: center; gap: 12px; }
 .wordmark {
   font-family: 'Space Mono', monospace;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 15px; font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.1em; text-transform: uppercase;
 }
 .tagline { font-size: 12px; color: var(--text-secondary); }
 .header-right { display: flex; gap: 6px; }
 .pill {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 20px;
+  background: var(--surface-el); border: 1px solid var(--border);
+  color: var(--text-secondary); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
 }
 
-/* ── MAIN AREA ────────────────────────────────── */
+/* ── MAIN ────────────────────────────────────── */
 #main {
   display: flex;
   height: calc(100vh - var(--header-h) - var(--footer-h));
   position: relative;
 }
 
-/* ── MAP ──────────────────────────────────────── */
+/* ── MAP ─────────────────────────────────────── */
 #map-container {
   width: 60%;
   position: relative;
@@ -91,19 +83,16 @@ html, body {
 }
 #map { width: 100%; height: 100%; background: var(--bg); }
 
-/* Filter bar — top-centre of map */
+/* Filter bar */
 #filter-bar {
   position: absolute;
-  top: 12px;
-  left: 50%;
+  top: 12px; left: 50%;
   transform: translateX(-50%);
   z-index: 500;
-  display: flex;
-  gap: 3px;
+  display: flex; gap: 3px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 3px;
+  border-radius: 6px; padding: 3px;
 }
 .filter-btn {
   background: transparent;
@@ -111,163 +100,110 @@ html, body {
   border-radius: 4px;
   color: var(--text-secondary);
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 5px 11px;
-  cursor: pointer;
+  font-size: 11px; font-weight: 500;
+  padding: 5px 11px; cursor: pointer;
   letter-spacing: 0.04em;
   transition: all 0.12s;
-  white-space: nowrap;
-  min-height: 32px;
+  white-space: nowrap; min-height: 32px;
 }
 .filter-btn:hover { color: var(--text-primary); border-color: var(--border); }
 .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* Bottom-left controls */
 #map-bottom-left {
-  position: absolute;
-  bottom: 20px;
-  left: 12px;
+  position: absolute; bottom: 20px; left: 12px;
   z-index: 500;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-start;
+  display: flex; flex-direction: column; gap: 6px;
 }
 #layer-controls {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 7px;
 }
 .layer-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  cursor: pointer;
-  user-select: none;
-  min-height: 28px;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 18px;
+  cursor: pointer; user-select: none; min-height: 28px;
 }
 .layer-label { font-size: 11px; font-weight: 500; color: var(--text-primary); }
 .toggle-switch {
   width: 28px; height: 15px;
-  background: var(--border);
-  border-radius: 8px;
-  position: relative;
-  transition: background 0.15s;
-  flex-shrink: 0;
+  background: var(--border); border-radius: 8px;
+  position: relative; transition: background 0.15s; flex-shrink: 0;
 }
 .toggle-switch.on { background: var(--accent); }
 .toggle-switch::after {
-  content: '';
-  width: 11px; height: 11px;
-  background: #fff;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px; left: 2px;
-  transition: left 0.15s;
+  content: ''; width: 11px; height: 11px;
+  background: #fff; border-radius: 50%;
+  position: absolute; top: 2px; left: 2px; transition: left 0.15s;
 }
 .toggle-switch.on::after { left: 15px; }
-
 #legend {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 9px 11px;
-  font-size: 11px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 11px; font-size: 11px;
 }
 .legend-title {
-  font-size: 9px; font-weight: 600;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--text-secondary); margin-bottom: 6px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px;
 }
 .legend-row { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; color: var(--text-primary); }
 .legend-row:last-child { margin-bottom: 0; }
 .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
-/* ── DESKTOP SIDE PANEL ───────────────────────── */
+/* ── DESKTOP SIDE PANEL ──────────────────────── */
 #side-panel {
   width: 40%;
   background: var(--surface);
   border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  flex-shrink: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden; flex-shrink: 0;
 }
-
-/* ── TAB NAV ──────────────────────────────────── */
 #panel-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .panel-tab {
-  flex: 1;
-  padding: 11px 0;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  cursor: pointer;
+  flex: 1; padding: 11px 0; text-align: center;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-secondary); cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: color 0.12s, border-color 0.12s;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 40px; display: flex; align-items: center; justify-content: center;
 }
 .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* ── PANEL SCROLL ─────────────────────────────── */
 #panel-scroll {
-  flex: 1;
-  overflow-y: auto;
-  position: relative;
+  flex: 1; overflow-y: auto; position: relative;
 }
 #panel-scroll::-webkit-scrollbar { width: 4px; }
 #panel-scroll::-webkit-scrollbar-track { background: transparent; }
 #panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── PANEL STATES ─────────────────────────────── */
+/* ── PANEL STATES ────────────────────────────── */
 .panel-state {
-  padding: 20px;
-  opacity: 0;
+  padding: 20px; opacity: 0;
   transition: opacity 0.15s ease;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  min-height: 100%;
+  position: absolute; top: 0; left: 0;
+  width: 100%; min-height: 100%;
   pointer-events: none;
 }
 .panel-state.active {
-  opacity: 1;
-  pointer-events: all;
-  position: relative;
+  opacity: 1; pointer-events: all; position: relative;
 }
 
-/* ── CONTENT STYLES ───────────────────────────── */
+/* ── CONTENT ─────────────────────────────────── */
 .context-blurb {
   font-size: 12px; color: var(--text-secondary);
   line-height: 1.6; margin-bottom: 16px;
 }
 .data-sources {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 16px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px; margin-bottom: 16px;
 }
 .ds-card {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 9px 10px;
+  background: var(--surface-el); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 10px;
 }
 .ds-name {
   font-size: 10px; font-weight: 700;
@@ -277,16 +213,12 @@ html, body {
 .ds-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
 
 .inline-stats {
-  display: flex;
-  background: var(--surface-el);
+  display: flex; background: var(--surface-el);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 20px;
+  border-radius: 6px; overflow: hidden; margin-bottom: 20px;
 }
 .inline-stat {
-  flex: 1; padding: 10px 8px;
-  text-align: center;
+  flex: 1; padding: 10px 8px; text-align: center;
   border-right: 1px solid var(--border);
 }
 .inline-stat:last-child { border-right: none; }
@@ -301,20 +233,13 @@ html, body {
   font-size: 10px; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--text-secondary);
-  margin-bottom: 10px;
-  padding-bottom: 6px;
+  margin-bottom: 10px; padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
-
-/* Project rows */
 .project-row {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: border-color 0.12s;
+  background: var(--surface-el); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color 0.12s;
 }
 .project-row:hover, .project-row:active { border-color: var(--accent); }
 .project-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
@@ -326,19 +251,11 @@ html, body {
 .project-meta { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; }
 .drill-link { font-size: 11px; color: var(--accent); font-weight: 500; }
 
-/* Bridge rows */
 .bridge-row {
-  background: var(--surface-el);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: border-color 0.12s;
-  min-height: 52px;
+  background: var(--surface-el); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 6px;
+  cursor: pointer; display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.12s; min-height: 52px;
 }
 .bridge-row:hover, .bridge-row:active { border-color: var(--accent); }
 .bridge-cond-bar { width: 4px; border-radius: 2px; align-self: stretch; flex-shrink: 0; min-height: 32px; }
@@ -347,31 +264,17 @@ html, body {
 .bridge-row-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 .cond-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; flex-shrink: 0; }
 
-/* Back button */
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--accent);
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 16px;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--accent); font-weight: 500;
+  cursor: pointer; margin-bottom: 16px;
+  background: none; border: none; padding: 0; font-family: inherit;
   min-height: 36px;
 }
 .back-btn:hover { opacity: 0.8; }
-
-/* Entity tag */
 .entity-tag {
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--text-secondary);
-  display: flex; align-items: center; gap: 5px;
-  margin-bottom: 6px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-secondary); display: flex; align-items: center; gap: 5px; margin-bottom: 6px;
 }
 .asset-header-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
 .asset-name { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
@@ -379,21 +282,16 @@ html, body {
 .risk-badge {
   display: inline-block; font-size: 9px; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 4px;
-  white-space: nowrap; margin-top: 2px;
+  padding: 3px 8px; border-radius: 4px; white-space: nowrap; margin-top: 2px;
 }
 .section-label {
-  font-size: 9px; font-weight: 600;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 8px; margin-top: 16px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-secondary); margin-bottom: 8px; margin-top: 16px;
   padding-bottom: 5px; border-bottom: 1px solid var(--border);
 }
 .detail-row {
-  display: flex; justify-content: space-between;
-  align-items: center; padding: 7px 0;
-  border-bottom: 1px solid rgba(30,45,64,0.5);
-  font-size: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; border-bottom: 1px solid rgba(30,45,64,0.5); font-size: 12px;
 }
 .detail-row:last-child { border-bottom: none; }
 .detail-key { color: var(--text-secondary); font-weight: 500; }
@@ -402,50 +300,32 @@ html, body {
 .amber-text { color: var(--fair); }
 .scour-warning {
   background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3);
-  border-radius: 4px; padding: 8px 10px;
-  font-size: 12px; color: var(--fair);
+  border-radius: 4px; padding: 8px 10px; font-size: 12px; color: var(--fair);
   display: flex; align-items: center; gap: 7px; margin-top: 8px;
 }
 .scour-critical { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--critical); }
-
 .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .chip {
   background: var(--surface-el); border: 1px solid var(--border);
   border-radius: 20px; padding: 5px 11px;
-  font-size: 11px; font-weight: 500;
-  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
   color: var(--text-primary); transition: border-color 0.12s;
-  white-space: nowrap; max-width: 220px;
-  overflow: hidden; text-overflow: ellipsis;
-  min-height: 32px;
+  white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; min-height: 32px;
 }
 .chip:hover, .chip:active { border-color: var(--accent); }
-
 .project-detail-name { font-size: 17px; font-weight: 600; color: var(--text-primary); line-height: 1.3; margin-bottom: 5px; }
 .project-detail-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
 .description-text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
 .overdue { color: var(--fair); }
-
-/* Blurred sections */
-.intel-section {
-  background: var(--surface-el); border: 1px solid var(--border);
-  border-radius: 6px; overflow: hidden; margin-top: 8px;
-}
-.intel-section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; border-bottom: 1px solid var(--border);
-}
+.intel-section { background: var(--surface-el); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 8px; }
+.intel-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border); }
 .intel-section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
-.coming-soon-badge {
-  font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--accent); background: rgba(14,165,233,0.1);
-  border: 1px solid rgba(14,165,233,0.25); padding: 2px 7px; border-radius: 10px;
-}
+.coming-soon-badge { font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: rgba(14,165,233,0.1); border: 1px solid rgba(14,165,233,0.25); padding: 2px 7px; border-radius: 10px; }
 .intel-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(30,45,64,0.4); font-size: 12px; }
 .intel-row:last-child { border-bottom: none; }
 .intel-key { color: var(--text-secondary); font-weight: 500; }
 .intel-val { color: var(--text-primary); font-weight: 500; filter: blur(5px); user-select: none; pointer-events: none; }
-
 .contact-section { background: var(--surface-el); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-top: 8px; }
 .contact-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid rgba(30,45,64,0.4); font-size: 12px; }
 .contact-row:last-child { border-bottom: none; }
@@ -453,13 +333,11 @@ html, body {
 .contact-val { color: var(--text-primary); font-weight: 500; }
 .contact-val-blurred { color: var(--text-secondary); font-weight: 500; filter: blur(4px); user-select: none; pointer-events: none; }
 .pro-note { font-size: 10px; color: var(--text-secondary); text-align: center; padding: 8px 12px; border-top: 1px solid var(--border); font-style: italic; }
-
 .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
 
-/* ── FOOTER ───────────────────────────────────── */
+/* ── FOOTER ──────────────────────────────────── */
 #footer {
-  height: var(--footer-h);
-  background: var(--surface);
+  height: var(--footer-h); background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; flex-shrink: 0;
@@ -467,192 +345,215 @@ html, body {
 .footer-text { font-size: 11px; color: var(--text-secondary); }
 .footer-text a { color: var(--accent); text-decoration: none; }
 
-/* ── LEAFLET OVERRIDES ────────────────────────── */
+/* ── LEAFLET ─────────────────────────────────── */
 .leaflet-control-attribution { display: none !important; }
 .leaflet-container { background: var(--bg) !important; }
 .leaflet-tooltip {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
-  color: var(--text-primary) !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 11px !important;
-  border-radius: 4px !important;
-  padding: 5px 9px !important;
-  box-shadow: none !important;
+  background: var(--surface) !important; border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important; font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important; border-radius: 4px !important;
+  padding: 5px 9px !important; box-shadow: none !important;
 }
 .leaflet-tooltip::before { display: none !important; }
 
-/* ══════════════════════════════════════════════════
-   MOBILE — Bottom Sheet Pattern
-   ══════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════
+   MOBILE
+   ══════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  :root {
-    --header-h: 48px;
-    --footer-h: 0px;
-    --sheet-peek: 68px;
-  }
+  :root { --header-h: 48px; --footer-h: 0px; }
 
   html, body { overflow: hidden; height: 100%; }
 
-  /* Full-screen layout */
+  /* Tagline + pills hidden — header stays tight */
+  .tagline { display: none; }
+  .header-right { display: none; }
+  #footer { display: none; }
+
+  /* Main: full-screen map as base layer */
   #main {
     flex-direction: column;
     height: calc(100vh - var(--header-h));
     position: relative;
   }
 
-  /* Map fills everything */
+  /* Map fills entire main area */
   #map-container {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; z-index: 0;
   }
 
-  /* Tagline hidden on mobile */
-  .tagline { display: none; }
-
-  /* Pills hidden on mobile */
-  .header-right { display: none; }
-
-  /* Footer hidden — no room, info is in sheet */
-  #footer { display: none; }
-
-  /* Filter bar — simplified, thumb-reachable at top */
+  /* Filter bar: full-width, top, large targets */
   #filter-bar {
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    transform: none;
-    justify-content: center;
-    width: auto;
+    top: 10px; left: 10px; right: 10px;
+    transform: none; width: auto; justify-content: stretch;
   }
-  .filter-btn {
-    flex: 1;
-    text-align: center;
-    font-size: 11px;
-    padding: 7px 6px;
-    min-height: 36px;
-  }
+  .filter-btn { flex: 1; text-align: center; font-size: 11px; padding: 8px 4px; min-height: 38px; }
 
-  /* Layer controls — compact, bottom-right on mobile so thumb can reach */
+  /* Layer controls: bottom-right, above the panel button */
   #map-bottom-left {
-    bottom: calc(var(--sheet-peek) + 12px);
-    left: auto;
-    right: 12px;
+    bottom: 76px; /* above the panel open button */
+    left: auto; right: 12px;
     align-items: flex-end;
   }
   #layer-controls { padding: 6px 8px; gap: 5px; }
   .layer-label { font-size: 10px; }
-
-  /* Hide legend on mobile — too much noise */
   #legend { display: none; }
 
-  /* ── BOTTOM SHEET ─────────────────────────── */
+  /* ── PANEL OPEN BUTTON ──────────────────── */
+  /* Floating labelled button at the bottom — obvious tap target */
+  #panel-open-btn {
+    position: absolute;
+    bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    transition: border-color 0.15s;
+  }
+  #panel-open-btn:active { border-color: var(--accent); }
+  #panel-open-btn-icon {
+    font-size: 14px; color: var(--accent);
+  }
+  #panel-open-btn-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-primary); letter-spacing: 0.02em;
+  }
+  #panel-open-btn-sub {
+    font-size: 10px; color: var(--text-secondary);
+  }
+  #panel-open-btn.hidden { display: none; }
+
+  /* ── SHEET (list panel) ─────────────────── */
+  /* Covers most of the screen, slides from bottom */
   #side-panel {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     width: 100%;
-    height: calc(100% - 48px); /* full height minus header */
+    /* Peek height is 0 — fully hidden until opened */
+    height: 88vh;
     background: var(--surface);
-    border-left: none;
     border-top: 1px solid var(--border);
+    border-left: none;
     border-radius: 16px 16px 0 0;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    /* Default: peeked — only show tab bar + drag handle */
-    transform: translateY(calc(100% - var(--sheet-peek)));
-    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
-    /* prevent scrolling the body when sheet is dragged */
-    touch-action: none;
+    z-index: 250;
+    display: flex; flex-direction: column;
+    transform: translateY(100%); /* fully hidden off-screen */
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 0 -6px 32px rgba(0,0,0,0.5);
+    /* IMPORTANT: never intercept map touches when hidden */
+    pointer-events: none;
   }
   #side-panel.sheet-open {
     transform: translateY(0);
-  }
-  #side-panel.sheet-detail {
-    transform: translateY(0);
+    pointer-events: all;
   }
 
-  /* Drag handle */
-  #sheet-handle {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 0 0;
+  /* Sheet header: close button + tabs */
+  #sheet-header {
+    display: flex; flex-direction: column;
     flex-shrink: 0;
-    cursor: pointer;
-    touch-action: none;
-  }
-  #sheet-handle-bar {
-    width: 36px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-bottom: 8px;
-  }
-
-  /* Tab bar always visible in sheet header */
-  #panel-tabs {
     border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
+  }
+  #sheet-close-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 8px;
+  }
+  #sheet-title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+  }
+  #sheet-close-btn {
+    width: 32px; height: 32px;
+    background: var(--surface-el); border: 1px solid var(--border);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--text-secondary); line-height: 1;
+  }
+
+  /* Tabs inside sheet */
+  #panel-tabs {
+    border-bottom: none;
+    padding: 0 16px;
   }
   .panel-tab {
-    font-size: 11px;
-    min-height: 44px;
-    padding: 0;
+    font-size: 11px; min-height: 40px;
+    padding: 0; border-bottom: 2px solid transparent;
   }
 
-  /* Scroll area */
+  /* Scroll */
   #panel-scroll {
-    flex: 1;
-    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
   .panel-state { padding: 16px; }
 
-  /* Back btn on mobile: looks like "← Map" breadcrumb */
-  .back-btn {
-    font-size: 13px;
-    min-height: 44px;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
+  /* ── DETAIL OVERLAY ─────────────────────── */
+  /* Full-screen slide-up for bridge/project detail */
+  #detail-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    z-index: 400;
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+  }
+  #detail-overlay.open {
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  #detail-overlay-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    min-height: 52px;
+  }
+  #detail-back-btn {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--accent);
+    cursor: pointer; background: none; border: none;
+    font-family: inherit; padding: 4px 0;
+  }
+  #detail-overlay-scroll {
+    flex: 1; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 16px;
   }
 
-  /* Tighten up text for mobile */
+  /* Hide desktop-side-panel back buttons (use overlay header instead) */
+  #panel-asset .back-btn,
+  #panel-project .back-btn { display: none; }
+
+  /* Tighter text on mobile */
   .asset-name { font-size: 15px; }
   .project-detail-name { font-size: 15px; }
-  .context-blurb { font-size: 12px; }
-  .data-sources { grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 14px; }
+  .data-sources { gap: 5px; margin-bottom: 14px; }
   .ds-card { padding: 8px; }
   .ds-desc { font-size: 10px; }
   .inline-stats { margin-bottom: 16px; }
   .is-value { font-size: 14px; }
-
-  /* Project rows — slightly bigger tap targets */
   .project-row { padding: 12px; margin-bottom: 7px; }
   .bridge-row { min-height: 56px; }
-
-  /* Chips — slightly larger */
   .chip { min-height: 36px; padding: 6px 12px; }
 }
 
-/* Very small screens */
 @media (max-width: 380px) {
   .data-sources { grid-template-columns: 1fr; }
-  .filter-btn { font-size: 10px; padding: 6px 4px; }
+  .filter-btn { font-size: 10px; }
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div id="header">
   <div class="header-left">
     <span class="wordmark">Tidemark</span>
@@ -664,14 +565,12 @@ html, body {
   </div>
 </div>
 
-<!-- MAIN -->
 <div id="main">
 
   <!-- MAP -->
   <div id="map-container">
     <div id="map"></div>
 
-    <!-- Filter Bar -->
     <div id="filter-bar">
       <button class="filter-btn active" data-filter="all">All</button>
       <button class="filter-btn" data-filter="critical">Critical</button>
@@ -679,7 +578,6 @@ html, body {
       <button class="filter-btn" data-filter="scour">Scour</button>
     </div>
 
-    <!-- Bottom-left: layer toggles + legend -->
     <div id="map-bottom-left">
       <div id="layer-controls">
         <div class="layer-row" id="toggle-nbi-row">
@@ -701,26 +599,46 @@ html, body {
         <div class="legend-row"><div class="legend-dot" style="background:#475569"></div>Unknown</div>
       </div>
     </div>
-  </div>
 
-  <!-- SIDE PANEL / BOTTOM SHEET -->
-  <div id="side-panel">
-
-    <!-- Drag handle (mobile only) -->
-    <div id="sheet-handle">
-      <div id="sheet-handle-bar"></div>
+    <!-- MOBILE: floating panel open button (replaces ambiguous drag handle) -->
+    <div id="panel-open-btn" style="display:none">
+      <span id="panel-open-btn-icon">&#9650;</span>
+      <div>
+        <div id="panel-open-btn-label">Capital Pipeline &amp; Inspections</div>
+        <div id="panel-open-btn-sub">20 projects &middot; 1,752 structures</div>
+      </div>
     </div>
 
-    <!-- Tab nav -->
+    <!-- MOBILE: full-screen detail overlay (bridge / project) -->
+    <div id="detail-overlay">
+      <div id="detail-overlay-header">
+        <button id="detail-back-btn">&#8592; Back to map</button>
+        <div id="detail-overlay-type" style="font-size:10px;color:var(--text-secondary);font-weight:600;letter-spacing:0.08em;text-transform:uppercase"></div>
+      </div>
+      <div id="detail-overlay-scroll"></div>
+    </div>
+  </div>
+
+  <!-- DESKTOP + MOBILE SHEET: side panel -->
+  <div id="side-panel">
+
+    <!-- Mobile sheet header (close + title) -->
+    <div id="sheet-header" style="display:none">
+      <div id="sheet-close-row">
+        <span id="sheet-title">Explore</span>
+        <div id="sheet-close-btn">&#10005;</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
     <div id="panel-tabs">
       <div class="panel-tab active" data-tab="pipeline">Capital Pipeline</div>
       <div class="panel-tab" data-tab="bridges">Bridge Inspections</div>
     </div>
 
-    <!-- Scroll area -->
     <div id="panel-scroll">
 
-      <!-- State: Capital Pipeline -->
+      <!-- Capital Pipeline -->
       <div id="panel-pipeline" class="panel-state active">
         <p class="context-blurb">Tidemark maps NYC waterfront infrastructure risk against active capital programs — helping marine inspectors, engineers, and capital allocators find where risk and investment intersect.</p>
         <div class="data-sources">
@@ -738,7 +656,7 @@ html, body {
           </div>
           <div class="ds-card">
             <div class="ds-name">NYC Open Data</div>
-            <div class="ds-desc">Agency procurement portals and project timelines</div>
+            <div class="ds-desc">Agency portals and project timelines</div>
           </div>
         </div>
         <div class="inline-stats">
@@ -750,19 +668,19 @@ html, body {
         <div id="project-list"></div>
       </div>
 
-      <!-- State: Bridge Inspections -->
+      <!-- Bridge Inspections -->
       <div id="panel-bridges" class="panel-state">
         <div class="panel-section-title">NBI Federal Bridges — by condition</div>
         <div id="bridge-list"></div>
       </div>
 
-      <!-- State: Asset Detail -->
+      <!-- Asset Detail (desktop) -->
       <div id="panel-asset" class="panel-state">
         <button class="back-btn" id="asset-back">&#8592; Back</button>
         <div id="asset-content"></div>
       </div>
 
-      <!-- State: Project Detail -->
+      <!-- Project Detail (desktop) -->
       <div id="panel-project" class="panel-state">
         <button class="back-btn" id="project-back">&#8592; Back</button>
         <div id="project-content"></div>
@@ -772,7 +690,6 @@ html, body {
   </div>
 </div>
 
-<!-- FOOTER (desktop only) -->
 <div id="footer">
   <span class="footer-text">Tidemark is a concept by Kern &mdash; <a href="https://buildwithkern.com" target="_blank">buildwithkern.com</a></span>
   <span class="footer-text">Built on FHWA NBI 2025 &middot; NYC Open Data &middot; NYCEDC WFMMS standards</span>
@@ -990,15 +907,15 @@ const PROJECTS = [
 // ============================================================
 // CONSTANTS
 // ============================================================
-const RISK_COLOR = { c:'#ef4444', p:'#f97316', f:'#eab308', g:'#22c55e', e:'#0ea5e9', u:'#475569' };
-const RISK_LABEL = { c:'Critical', p:'Poor', f:'Fair', g:'Good', e:'Excellent', u:'Unknown' };
-const BOROUGH_FULL = { M:'Manhattan', B:'Brooklyn', Q:'Queens', S:'Staten Island', Bx:'Bronx' };
+const RISK_COLOR = {c:'#ef4444',p:'#f97316',f:'#eab308',g:'#22c55e',e:'#0ea5e9',u:'#475569'};
+const RISK_LABEL = {c:'Critical',p:'Poor',f:'Fair',g:'Good',e:'Excellent',u:'Unknown'};
+const BOROUGH_FULL = {M:'Manhattan',B:'Brooklyn',Q:'Queens',S:'Staten Island',Bx:'Bronx'};
 const AGENCY_PORTAL = {
-  'NYC DOT': 'https://a069-prdap52.nyc.gov/APSApp/index.html',
-  'NYCEDC':  'https://edc.nyc/procurements',
-  'DSNY':    'https://www1.nyc.gov/site/dsny/business/doing-business.page',
-  'DEP':     'https://www.nyc.gov/site/dep/business/procurement.page',
-  'DDC':     'https://www.nyc.gov/site/ddc/business/bid-opportunities.page'
+  'NYC DOT':'https://a069-prdap52.nyc.gov/APSApp/index.html',
+  'NYCEDC':'https://edc.nyc/procurements',
+  'DSNY':'https://www1.nyc.gov/site/dsny/business/doing-business.page',
+  'DEP':'https://www.nyc.gov/site/dep/business/procurement.page',
+  'DDC':'https://www.nyc.gov/site/ddc/business/bid-opportunities.page'
 };
 const CATEGORY_AGENCY = {
   'Ferries':'NYC DOT','Industrial Development':'NYCEDC',
@@ -1029,21 +946,17 @@ function getContact(i){return CONTACT_DATA[i%CONTACT_DATA.length];}
 const isMobile = () => window.innerWidth <= 768;
 
 // ============================================================
-// MAP INIT
+// MAP
 // ============================================================
-const map = L.map('map', {center:[40.71,-73.98], zoom:11, zoomControl:false});
+const map = L.map('map',{center:[40.71,-73.98],zoom:11,zoomControl:false});
 L.control.zoom({position:'bottomright'}).addTo(map);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
-  subdomains:'abcd', maxZoom:19
+  subdomains:'abcd',maxZoom:19
 }).addTo(map);
 const canvasRenderer = L.canvas({padding:0.5});
 
-// ============================================================
-// LAYER STATE
-// ============================================================
-let activeFilter = 'all';
-let nbiVisible = true, cityVisible = true;
-let nbiMarkers = [], cityMarkers = [];
+let activeFilter='all', nbiVisible=true, cityVisible=true;
+let nbiMarkers=[], cityMarkers=[];
 const nbiLayerGroup = L.layerGroup().addTo(map);
 const cityLayerGroup = L.featureGroup().addTo(map);
 
@@ -1064,37 +977,33 @@ function matchesFilter(code,scour,filter){
 }
 function applyFilter(){
   nbiMarkers.forEach(({marker,code,scour})=>{
-    const show=matchesFilter(code,scour,activeFilter);
-    marker.setStyle({opacity:show?1:0,fillOpacity:show?0.85:0});
+    const s=matchesFilter(code,scour,activeFilter);
+    marker.setStyle({opacity:s?1:0,fillOpacity:s?0.85:0});
   });
   cityMarkers.forEach(({marker,code})=>{
-    const show=matchesFilter(code,null,activeFilter);
-    marker.setStyle({opacity:show?1:0,fillOpacity:show?0.85:0});
+    const s=matchesFilter(code,null,activeFilter);
+    marker.setStyle({opacity:s?1:0,fillOpacity:s?0.85:0});
   });
 }
 
-// ============================================================
-// NBI MARKERS
-// ============================================================
+// NBI markers
 BRIDGES_NBI.forEach(rec=>{
-  const[lat,lon,code,name,borough,substructure,lastUWI,scour]=rec;
+  const[lat,lon,code,name,borough,,]=rec;
   const color=getColor(code);
   const m=L.circleMarker([lat,lon],{
     radius:7,fillColor:color,color:shadeColor(color,-30),
     weight:1.5,fillOpacity:0.85,opacity:1
   });
   const bn=BOROUGH_FULL[borough]||borough;
-  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${bn}`,{sticky:true,offset:[10,0]});
-  m.on('click',()=>showAssetNBI(rec));
+  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'?'}</span> &middot; ${bn}`,{sticky:true,offset:[10,0]});
+  m.on('click',e=>{ L.DomEvent.stopPropagation(e); showAssetNBI(rec); });
   m.addTo(nbiLayerGroup);
-  nbiMarkers.push({marker:m,code,scour:scour||''});
+  nbiMarkers.push({marker:m,code,scour:rec[7]||''});
 });
 
-// ============================================================
-// CITY MARKERS
-// ============================================================
+// City markers
 BRIDGES_CITY.forEach(rec=>{
-  const[lat,lon,code,name,borough,rating,year,budget]=rec;
+  const[lat,lon,code,name,borough,,]=rec;
   const color=getColor(code);
   const m=L.circleMarker([lat,lon],{
     renderer:canvasRenderer,radius:4,
@@ -1102,15 +1011,13 @@ BRIDGES_CITY.forEach(rec=>{
     weight:1,fillOpacity:0.85,opacity:1
   });
   const bn=BOROUGH_FULL[borough]||borough;
-  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${bn}`,{sticky:true,offset:[8,0]});
-  m.on('click',()=>showAssetCity(rec));
+  m.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'?'}</span> &middot; ${bn}`,{sticky:true,offset:[8,0]});
+  m.on('click',e=>{ L.DomEvent.stopPropagation(e); showAssetCity(rec); });
   m.addTo(cityLayerGroup);
   cityMarkers.push({marker:m,code});
 });
 
-// ============================================================
-// LAYER TOGGLES
-// ============================================================
+// Layer toggles
 function setupToggle(rowId,tsId,layerGroup,getV,setV){
   document.getElementById(rowId).addEventListener('click',()=>{
     const on=!getV(); setV(on);
@@ -1121,9 +1028,7 @@ function setupToggle(rowId,tsId,layerGroup,getV,setV){
 setupToggle('toggle-nbi-row','ts-nbi',nbiLayerGroup,()=>nbiVisible,v=>{nbiVisible=v;});
 setupToggle('toggle-city-row','ts-city',cityLayerGroup,()=>cityVisible,v=>{cityVisible=v;});
 
-// ============================================================
-// FILTER BUTTONS
-// ============================================================
+// Filter buttons
 document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
@@ -1134,69 +1039,63 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // ============================================================
-// BOTTOM SHEET (mobile)
+// MOBILE UI SETUP
 // ============================================================
 const sheet = document.getElementById('side-panel');
-let sheetOpen = false;
+const sheetHeader = document.getElementById('sheet-header');
+const panelOpenBtn = document.getElementById('panel-open-btn');
+const detailOverlay = document.getElementById('detail-overlay');
+const detailOverlayScroll = document.getElementById('detail-overlay-scroll');
+const detailOverlayType = document.getElementById('detail-overlay-type');
+
+function setupMobileUI(){
+  if(!isMobile()) return;
+  // Show floating button, sheet header
+  panelOpenBtn.style.display='flex';
+  sheetHeader.style.display='flex';
+  // Auto-open sheet on first load so user sees context immediately
+  setTimeout(()=>openSheet(), 400);
+}
 
 function openSheet(){
-  sheetOpen = true;
   sheet.classList.add('sheet-open');
+  panelOpenBtn.classList.add('hidden');
 }
 function closeSheet(){
-  sheetOpen = false;
-  sheet.classList.remove('sheet-open','sheet-detail');
+  sheet.classList.remove('sheet-open');
+  panelOpenBtn.classList.remove('hidden');
 }
-function openSheetDetail(){
-  sheetOpen = true;
-  sheet.classList.add('sheet-open','sheet-detail');
+function openDetailOverlay(typeLabel, contentHtml){
+  detailOverlayType.textContent = typeLabel;
+  detailOverlayScroll.innerHTML = contentHtml + '<div style="height:32px"></div>';
+  detailOverlayScroll.scrollTop = 0;
+  detailOverlay.classList.add('open');
+}
+function closeDetailOverlay(){
+  detailOverlay.classList.remove('open');
 }
 
-// Drag handle tap toggles sheet
-document.getElementById('sheet-handle').addEventListener('click',()=>{
-  if(!isMobile()) return;
-  if(sheetOpen) closeSheet(); else openSheet();
+// Panel open button
+panelOpenBtn.addEventListener('click', openSheet);
+// Close button in sheet header
+document.getElementById('sheet-close-btn').addEventListener('click', closeSheet);
+// Map click closes sheet (not detail overlay)
+map.on('click',()=>{ if(isMobile()) closeSheet(); });
+// Detail overlay back
+document.getElementById('detail-back-btn').addEventListener('click',()=>{
+  closeDetailOverlay();
 });
-
-// Swipe-to-close gesture
-let startY=0, startT=0;
-sheet.addEventListener('touchstart',e=>{
-  startY=e.touches[0].clientY;
-  startT=Date.now();
-},{passive:true});
-sheet.addEventListener('touchend',e=>{
-  if(!isMobile()) return;
-  const dy=e.changedTouches[0].clientY - startY;
-  const dt=Date.now()-startT;
-  // Quick downward swipe → close
-  if(dy>60 && dt<300 && e.changedTouches[0].clientY > (window.innerHeight*0.35)){
-    closeSheet();
-  }
-},{passive:true});
 
 // ============================================================
 // PANEL STATE MACHINE
 // ============================================================
-let activeTab = 'pipeline';
-let prevPanel = 'panel-pipeline';
+let activeTab='pipeline', prevPanel='panel-pipeline';
 const ALL_PANELS=['panel-pipeline','panel-bridges','panel-asset','panel-project'];
 
-function showPanel(id){
-  ALL_PANELS.forEach(p=>{
-    const el=document.getElementById(p);
-    el.classList.remove('active');
-  });
+function showDesktopPanel(id){
+  ALL_PANELS.forEach(p=>document.getElementById(p).classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('panel-scroll').scrollTop=0;
-
-  // Mobile: opening a detail panel opens sheet fully
-  if(isMobile()){
-    if(id==='panel-asset'||id==='panel-project'){
-      openSheetDetail();
-    } else {
-      openSheet();
-    }
-  }
 }
 
 // Tab clicks
@@ -1207,26 +1106,17 @@ document.querySelectorAll('.panel-tab').forEach(tab=>{
     activeTab=tab.dataset.tab;
     const pid=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
     prevPanel=pid;
-    showPanel(pid);
+    showDesktopPanel(pid);
     if(isMobile()) openSheet();
   });
 });
 
-// Back buttons
-document.getElementById('asset-back').addEventListener('click',()=>{
-  showPanel(prevPanel);
-  if(isMobile()) openSheet();
-});
-document.getElementById('project-back').addEventListener('click',()=>{
-  showPanel(prevPanel);
-  if(isMobile()) openSheet();
-});
-
-// Clicking the map closes the sheet on mobile
-map.on('click',()=>{ if(isMobile()) closeSheet(); });
+// Desktop back buttons
+document.getElementById('asset-back').addEventListener('click',()=>{ showDesktopPanel(prevPanel); });
+document.getElementById('project-back').addEventListener('click',()=>{ showDesktopPanel(prevPanel); });
 
 // ============================================================
-// RENDER: PIPELINE
+// RENDER LISTS
 // ============================================================
 const maxBudget=Math.max(...PROJECTS.map(p=>p.budget));
 (function renderPipeline(){
@@ -1251,17 +1141,13 @@ const maxBudget=Math.max(...PROJECTS.map(p=>p.budget));
   });
 })();
 
-// ============================================================
-// RENDER: BRIDGE LIST
-// ============================================================
 (function renderBridgeList(){
   const order={c:0,p:1,f:2,g:3,e:4,u:5};
   const sorted=[...BRIDGES_NBI].sort((a,b)=>(order[a[2]]||5)-(order[b[2]]||5));
   const list=document.getElementById('bridge-list');
   sorted.slice(0,40).forEach(rec=>{
-    const[lat,lon,code,name,borough,substructure]=rec;
+    const[,,code,name,borough,substructure]=rec;
     const color=getColor(code);
-    const label=RISK_LABEL[code]||'Unknown';
     const bn=BOROUGH_FULL[borough]||borough;
     const row=document.createElement('div');
     row.className='bridge-row';
@@ -1271,7 +1157,7 @@ const maxBudget=Math.max(...PROJECTS.map(p=>p.budget));
         <div class="bridge-row-name">${name}</div>
         <div class="bridge-row-meta">${bn} &middot; ${substructure||'Not recorded'}</div>
       </div>
-      <span class="cond-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;
+      <span class="cond-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${RISK_LABEL[code]||'?'}</span>`;
     row.addEventListener('click',()=>showAssetNBI(rec));
     list.appendChild(row);
   });
@@ -1306,26 +1192,22 @@ function isOverdue(s){
   const[m,d,y]=s.split('/');
   return new Date(parseInt(y),parseInt(m)-1,parseInt(d))<new Date(2026,5,11);
 }
-function getAgency(proj){return CATEGORY_AGENCY[proj.category]||'NYC DOT';}
+function getAgency(p){return CATEGORY_AGENCY[p.category]||'NYC DOT';}
 function getPortal(a){return AGENCY_PORTAL[a]||'https://www.nyc.gov/site/mocs/systems/about-passport.page';}
 
 const BRIDGE_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>`;
 const PROJECT_SVG=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`;
 
 // ============================================================
-// ASSET DETAIL — NBI
+// ASSET DETAIL HTML BUILDER
 // ============================================================
-function showAssetNBI(rec){
-  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+function buildAssetNBIHtml(rec){
   const[lat,lon,code,name,borough,substructure,lastUWI,scour]=rec;
-  const color=getColor(code);
-  const label=RISK_LABEL[code]||'Unknown';
+  const color=getColor(code), label=RISK_LABEL[code]||'Unknown';
   const bn=BOROUGH_FULL[borough]||borough;
-  const sl=( scour||'').toLowerCase();
-  const isCrit=sl.includes('critical');
-  const isConcern=sl.includes('concern')||sl.includes('stable with');
+  const sl=(scour||'').toLowerCase();
+  const isCrit=sl.includes('critical'), isConcern=sl.includes('concern')||sl.includes('stable with');
   const warn=uwWarn(lastUWI);
-
   const nearby=PROJECTS.filter(p=>p.borough==='Citywide'||p.borough.includes(bn)).slice(0,3);
 
   let h=`
@@ -1345,11 +1227,9 @@ function showAssetNBI(rec){
       <span class="detail-val ${warn?'amber-text':''}">${lastUWI||'Not recorded'}${warn?' ⚠':''}</span>
     </div>
     <div class="section-label">Scour</div>`;
-
   if(isCrit) h+=`<div class="scour-warning scour-critical">&#9888; Scour critical — monitoring required</div>`;
   else if(isConcern) h+=`<div class="scour-warning">&#9888; ${scour}</div>`;
   else h+=`<div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${scour||'Not recorded'}</span></div>`;
-
   if(nearby.length){
     h+=`<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
     nearby.forEach(p=>{
@@ -1358,22 +1238,14 @@ function showAssetNBI(rec){
     });
     h+=`</div>`;
   }
-  h+=`<div style="height:16px"></div>`;
-  document.getElementById('asset-content').innerHTML=h;
-  showPanel('panel-asset');
+  return h;
 }
 
-// ============================================================
-// ASSET DETAIL — City
-// ============================================================
-function showAssetCity(rec){
-  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+function buildAssetCityHtml(rec){
   const[lat,lon,code,name,borough,rating,year,budget]=rec;
-  const color=getColor(code);
-  const label=RISK_LABEL[code]||'Unknown';
+  const color=getColor(code), label=RISK_LABEL[code]||'Unknown';
   const bn=BOROUGH_FULL[borough]||borough;
   const nearby=PROJECTS.filter(p=>p.borough==='Citywide'||p.borough.includes(bn)).slice(0,3);
-
   let h=`
     <div class="entity-tag">${BRIDGE_SVG} Bridge Inspection &middot; City (DOT)</div>
     <div class="asset-header-row">
@@ -1382,13 +1254,9 @@ function showAssetCity(rec){
     </div>
     <div class="asset-sub">${bn} &middot; NYC DOT</div>
     <div class="section-label">Condition</div>
-    <div class="detail-row">
-      <span class="detail-key">Overall Rating</span>
-      <span class="detail-val"><span class="condition-dot" style="background:${color}"></span>${rating||'Not recorded'}</span>
-    </div>
+    <div class="detail-row"><span class="detail-key">Overall Rating</span><span class="detail-val"><span class="condition-dot" style="background:${color}"></span>${rating||'Not recorded'}</span></div>
     <div class="detail-row"><span class="detail-key">Year Built</span><span class="detail-val">${year||'Not recorded'}</span></div>
     <div class="detail-row"><span class="detail-key">Replacement Cost Est.</span><span class="detail-val">${budget||'Not recorded'}</span></div>`;
-
   if(nearby.length){
     h+=`<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
     nearby.forEach(p=>{
@@ -1397,30 +1265,21 @@ function showAssetCity(rec){
     });
     h+=`</div>`;
   }
-  h+=`<div style="height:16px"></div>`;
-  document.getElementById('asset-content').innerHTML=h;
-  showPanel('panel-asset');
+  return h;
 }
 
-// ============================================================
-// PROJECT DETAIL
-// ============================================================
-function showProjectDetail(idx){
-  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+function buildProjectHtml(idx){
   const proj=PROJECTS[idx];
-  const agency=getAgency(proj);
-  const portal=getPortal(agency);
+  const agency=getAgency(proj), portal=getPortal(agency);
   const overdue=isOverdue(proj.forecast_completion);
   const dateDisplay=overdue
     ?`<span class="overdue">${formatDate(proj.forecast_completion)} (overdue)</span>`
     :formatDate(proj.forecast_completion);
-
   const projBoroughs=proj.borough==='Citywide'
     ?['M','B','Q','S','Bx']
     :Object.entries(BOROUGH_FULL).filter(([k,v])=>proj.borough.includes(v)).map(([k])=>k);
   const poorAssets=BRIDGES_NBI.filter(r=>(r[2]==='c'||r[2]==='p')&&projBoroughs.includes(r[4])).slice(0,4);
-  const intel=getIntel(idx);
-  const contact=getContact(idx);
+  const intel=getIntel(idx), contact=getContact(idx);
 
   let h=`
     <div class="entity-tag">${PROJECT_SVG} Capital Project</div>
@@ -1431,7 +1290,6 @@ function showProjectDetail(idx){
     <div class="detail-row"><span class="detail-key">Phase</span><span class="detail-val">${proj.phase}</span></div>
     <div class="detail-row"><span class="detail-key">Forecast</span><span class="detail-val">${dateDisplay}</span></div>
     <div class="detail-row"><span class="detail-key">Agency</span><span class="detail-val">${agency}</span></div>`;
-
   if(poorAssets.length){
     h+=`<div class="section-label">Nearby Assets in Poor Condition</div><div class="chips-wrap">`;
     poorAssets.forEach(rec=>{
@@ -1441,7 +1299,6 @@ function showProjectDetail(idx){
     });
     h+=`</div>`;
   }
-
   h+=`
     <hr class="divider">
     <div class="intel-section">
@@ -1458,20 +1315,56 @@ function showProjectDetail(idx){
     <div class="section-label" style="margin-top:0">Contact &amp; Procurement</div>
     <div class="contact-section">
       <div class="contact-row"><span class="contact-key">Lead Agency</span><span class="contact-val">${agency}</span></div>
-      <div class="contact-row">
-        <span class="contact-key">Procurement</span>
-        <span class="contact-val"><a href="${portal}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none">Open portal &rarr;</a></span>
-      </div>
+      <div class="contact-row"><span class="contact-key">Procurement</span><span class="contact-val"><a href="${portal}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none">Open portal &rarr;</a></span></div>
       <div class="contact-row"><span class="contact-key">Project Manager</span><span class="contact-val-blurred">${contact.name}</span></div>
       <div class="contact-row"><span class="contact-key">Phone</span><span class="contact-val-blurred">${contact.phone}</span></div>
       <div class="contact-row"><span class="contact-key">Email</span><span class="contact-val-blurred">${contact.email}</span></div>
       <div class="pro-note">Full contact directory available in Tidemark Pro</div>
-    </div>
-    <div style="height:32px"></div>`;
-
-  document.getElementById('project-content').innerHTML=h;
-  showPanel('panel-project');
+    </div>`;
+  return h;
 }
+
+// ============================================================
+// SHOW FUNCTIONS
+// ============================================================
+function showAssetNBI(rec){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const html=buildAssetNBIHtml(rec);
+  if(isMobile()){
+    closeSheet();
+    openDetailOverlay('Bridge Inspection', html);
+  } else {
+    document.getElementById('asset-content').innerHTML=html;
+    showDesktopPanel('panel-asset');
+  }
+}
+function showAssetCity(rec){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const html=buildAssetCityHtml(rec);
+  if(isMobile()){
+    closeSheet();
+    openDetailOverlay('Bridge Inspection', html);
+  } else {
+    document.getElementById('asset-content').innerHTML=html;
+    showDesktopPanel('panel-asset');
+  }
+}
+function showProjectDetail(idx){
+  prevPanel=activeTab==='pipeline'?'panel-pipeline':'panel-bridges';
+  const html=buildProjectHtml(idx);
+  if(isMobile()){
+    closeSheet();
+    openDetailOverlay('Capital Project', html);
+  } else {
+    document.getElementById('project-content').innerHTML=html;
+    showDesktopPanel('panel-project');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+setupMobileUI();
 </script>
 </body>
 </html>
