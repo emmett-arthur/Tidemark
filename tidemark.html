@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidemark — NYC Waterfront Capital Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface-el: #1a2332;
+  --border: #1e2d40;
+  --text-primary: #e2e8f0;
+  --text-secondary: #64748b;
+  --accent: #0ea5e9;
+  --critical: #ef4444;
+  --poor: #f97316;
+  --fair: #eab308;
+  --good: #22c55e;
+  --excellent: #0ea5e9;
+  --unknown: #475569;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* HEADER */
+#header {
+  height: 52px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  z-index: 10;
+  position: relative;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.wordmark {
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.tagline { font-size: 12px; color: var(--text-secondary); }
+.header-right { display: flex; gap: 8px; }
+.pill {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* MAIN */
+#main {
+  display: flex;
+  height: calc(100vh - 52px - 40px);
+}
+
+/* MAP */
+#map-container {
+  width: 60%;
+  position: relative;
+  flex-shrink: 0;
+}
+#map { width: 100%; height: 100%; background: var(--bg); }
+
+/* FILTER BAR — top of map */
+#filter-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+}
+.filter-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 11px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.filter-btn:hover { color: var(--text-primary); border-color: var(--border); }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* BOTTOM-LEFT MAP CONTROLS PANEL */
+#map-bottom-left {
+  position: absolute;
+  bottom: 24px;
+  left: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* Layer toggles */
+#layer-controls {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.layer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.layer-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+/* Toggle switch */
+.toggle-switch {
+  width: 28px;
+  height: 15px;
+  background: var(--border);
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--accent); }
+.toggle-switch::after {
+  content: '';
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.15s;
+}
+.toggle-switch.on::after { left: 15px; }
+
+/* LEGEND */
+#legend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 11px;
+}
+.legend-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+}
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+.legend-row:last-child { margin-bottom: 0; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* SIDE PANEL */
+#side-panel {
+  width: 40%;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* TAB NAV */
+#panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-tab {
+  flex: 1;
+  padding: 11px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.12s, border-color 0.12s;
+}
+.panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PANEL SCROLL AREA */
+#panel-scroll {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+#panel-scroll::-webkit-scrollbar { width: 4px; }
+#panel-scroll::-webkit-scrollbar-track { background: transparent; }
+#panel-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* PANEL STATES */
+.panel-state {
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  min-height: 100%;
+  pointer-events: none;
+}
+.panel-state.active {
+  opacity: 1;
+  pointer-events: all;
+  position: relative;
+}
+
+/* CONTEXT STRIP */
+.context-blurb {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.data-sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.ds-card {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 10px;
+}
+.ds-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+.ds-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+
+/* INLINE STATS */
+.inline-stats {
+  display: flex;
+  gap: 0;
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.inline-stat {
+  flex: 1;
+  padding: 10px 8px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.inline-stat:last-child { border-right: none; }
+.is-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+.is-value { font-size: 15px; font-weight: 600; color: var(--text-primary); line-height: 1; }
+
+/* PANEL SECTION HEADER */
+.panel-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* PROJECT ROWS */
+.project-row {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.project-row:hover { border-color: var(--accent); }
+.project-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.project-budget { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.project-borough { font-size: 11px; color: var(--text-secondary); font-weight: 500; }
+.budget-bar-wrap {
+  background: var(--border);
+  border-radius: 2px;
+  height: 3px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), #0369a1);
+}
+.project-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  line-height: 1.4;
+}
+.project-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drill-link { font-size: 11px; color: var(--accent); font-weight: 500; }
+
+/* BRIDGE INSPECTION LIST */
+.bridge-row {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.12s;
+}
+.bridge-row:hover { border-color: var(--accent); }
+.bridge-cond-bar {
+  width: 4px;
+  border-radius: 2px;
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+.bridge-row-body { flex: 1; min-width: 0; }
+.bridge-row-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bridge-row-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.cond-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 18px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+.back-btn:hover { opacity: 0.8; }
+
+/* ENTITY TYPE TAG */
+.entity-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+/* ASSET DETAIL */
+.asset-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.asset-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+.asset-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.risk-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  margin-top: 16px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(30,45,64,0.5);
+  font-size: 12px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-key { color: var(--text-secondary); font-weight: 500; }
+.detail-val { color: var(--text-primary); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.condition-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.amber-text { color: var(--fair); }
+.scour-warning {
+  background: rgba(234,179,8,0.1);
+  border: 1px solid rgba(234,179,8,0.3);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--fair);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+}
+.scour-critical {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+  color: var(--critical);
+}
+
+/* CHIPS */
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-primary);
+  transition: border-color 0.12s;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip:hover { border-color: var(--accent); }
+
+/* PROJECT DETAIL */
+.project-detail-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 5px;
+}
+.project-detail-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+.description-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.overdue { color: var(--fair); }
+
+/* BLURRED INTELLIGENCE SECTION */
+.intel-section {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.intel-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.intel-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.coming-soon-badge {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(14,165,233,0.1);
+  border: 1px solid rgba(14,165,233,0.25);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.intel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(30,45,64,0.4);
+  font-size: 12px;
+}
+.intel-row:last-child { border-bottom: none; }
+.intel-key { color: var(--text-secondary); font-weight: 500; }
+.intel-val {
+  color: var(--text-primary);
+  font-weight: 500;
+  filter: blur(5px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* CONTACT SECTION */
+.contact-section {
+  background: var(--surface-el);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(30,45,64,0.4);
+  font-size: 12px;
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-key { color: var(--text-secondary); font-weight: 500; }
+.contact-val { color: var(--text-primary); font-weight: 500; }
+.contact-val-blurred {
+  color: var(--text-secondary);
+  font-weight: 500;
+  filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+.pro-note {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  font-style: italic;
+}
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* FOOTER */
+#footer {
+  height: 40px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+.footer-text { font-size: 11px; color: var(--text-secondary); }
+.footer-text a { color: var(--accent); text-decoration: none; }
+
+/* Leaflet overrides */
+.leaflet-control-attribution { display: none !important; }
+.leaflet-container { background: var(--bg) !important; }
+.leaflet-tooltip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  border-radius: 4px !important;
+  padding: 5px 9px !important;
+  box-shadow: none !important;
+}
+.leaflet-tooltip::before { display: none !important; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  html, body { overflow: auto; }
+  #main { flex-direction: column; height: auto; }
+  #map-container { width: 100%; height: 50vh; }
+  #side-panel { width: 100%; height: auto; min-height: 50vh; }
+  #filter-bar { left: 12px; transform: none; font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-left">
+    <span class="wordmark">Tidemark</span>
+    <span class="tagline">NYC Waterfront Capital Intelligence</span>
+  </div>
+  <div class="header-right">
+    <span class="pill">NBI 2025</span>
+    <span class="pill">NYC DOT</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- MAP -->
+  <div id="map-container">
+    <div id="map"></div>
+
+    <!-- Filter Bar -->
+    <div id="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="critical">Critical</button>
+      <button class="filter-btn" data-filter="poor">Poor</button>
+      <button class="filter-btn" data-filter="scour">Scour</button>
+    </div>
+
+    <!-- Bottom-left controls: layer toggles + legend -->
+    <div id="map-bottom-left">
+      <div id="layer-controls">
+        <div class="layer-row" id="toggle-nbi-row">
+          <span class="layer-label">Federal (NBI)</span>
+          <div class="toggle-switch on" id="ts-nbi"></div>
+        </div>
+        <div class="layer-row" id="toggle-city-row">
+          <span class="layer-label">City (DOT)</span>
+          <div class="toggle-switch on" id="ts-city"></div>
+        </div>
+      </div>
+      <div id="legend">
+        <div class="legend-title">Condition</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#ef4444"></div>Critical</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#f97316"></div>Poor</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#eab308"></div>Fair</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#22c55e"></div>Good / Satisfactory</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#0ea5e9"></div>Excellent</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#475569"></div>Unknown</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div id="side-panel">
+
+    <!-- Tab nav -->
+    <div id="panel-tabs">
+      <div class="panel-tab active" data-tab="pipeline">Capital Pipeline</div>
+      <div class="panel-tab" data-tab="bridges">Bridge Inspections</div>
+    </div>
+
+    <!-- Scroll area -->
+    <div id="panel-scroll">
+
+      <!-- State A: Capital Pipeline (default) -->
+      <div id="panel-pipeline" class="panel-state active">
+        <p class="context-blurb">
+          Tidemark maps NYC waterfront infrastructure risk against active capital programs. Use it to identify which bridges need work, what's funded, who's procuring, and where inspection risk intersects with construction opportunity.
+        </p>
+
+        <div class="data-sources">
+          <div class="ds-card">
+            <div class="ds-name">FHWA NBI 2025</div>
+            <div class="ds-desc">Federal bridge inventory — condition ratings, scour risk, underwater inspection records</div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-name">NYC DOT</div>
+            <div class="ds-desc">City-owned bridge inventory — 1,582 structures rated and located across all five boroughs</div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-name">NYCEDC WFMMS</div>
+            <div class="ds-desc">Waterfront capital programs — active projects, budgets, procurement phases</div>
+          </div>
+          <div class="ds-card">
+            <div class="ds-name">NYC Open Data</div>
+            <div class="ds-desc">Agency procurement portals, project timelines and forecast completion dates</div>
+          </div>
+        </div>
+
+        <div class="inline-stats">
+          <div class="inline-stat">
+            <div class="is-label">Structures</div>
+            <div class="is-value">1,752</div>
+          </div>
+          <div class="inline-stat">
+            <div class="is-label">Critical / Poor</div>
+            <div class="is-value">37</div>
+          </div>
+          <div class="inline-stat">
+            <div class="is-label">Pipeline</div>
+            <div class="is-value">$8.1B</div>
+          </div>
+        </div>
+
+        <div class="panel-section-title">Active Capital Projects</div>
+        <div id="project-list"></div>
+      </div>
+
+      <!-- State B: Bridge Inspections tab -->
+      <div id="panel-bridges" class="panel-state">
+        <div class="panel-section-title">NBI Federal Bridges — by condition</div>
+        <div id="bridge-list"></div>
+      </div>
+
+      <!-- State C: Asset Detail -->
+      <div id="panel-asset" class="panel-state">
+        <button class="back-btn" id="asset-back">&#8592; Back</button>
+        <div id="asset-content"></div>
+      </div>
+
+      <!-- State D: Project Detail -->
+      <div id="panel-project" class="panel-state">
+        <button class="back-btn" id="project-back">&#8592; Back</button>
+        <div id="project-content"></div>
+      </div>
+
+    </div><!-- /panel-scroll -->
+  </div><!-- /side-panel -->
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<div id="footer">
+  <span class="footer-text">Tidemark is a concept by Kern &mdash; <a href="https://buildwithkern.com" target="_blank">buildwithkern.com</a></span>
+  <span class="footer-text">Built on FHWA NBI 2025 &middot; NYC Open Data &middot; NYCEDC WFMMS standards</span>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const BRIDGES_NBI = [[40.830039,-73.93495,"c","HARLEM RVR SHORE","M","Fair","Not recorded","Scour critical"],[40.743311,-73.837311,"g","COLLEGE PT BLVD  678I678","Q","Satisfactory","Not recorded","Not scour critical"],[40.744083,-73.838389,"f","RTE I678  FLUSHING RIVER","Q","Fair","Not recorded","Not scour critical"],[40.742392,-73.837981,"f","RTE I678  FLUSHING RIVER","Q","Fair","Not recorded","Not scour critical"],[40.727828,-73.832906,"f","RTE I678  FLUSHING RIVER","Q","Fair","Not recorded","Not scour critical"],[40.728294,-73.833456,"g","WILLOW-MEADOW LKS","Q","Satisfactory","Not recorded","Not scour critical"],[40.727431,-73.833031,"g","FLUSHING RIVER","Q","Satisfactory","Not recorded","Not scour critical"],[40.738997,-73.836833,"f","FLUSHING CREEK  MEADOW L","Q","Fair","Not recorded","Not scour critical"],[40.741039,-73.837758,"g","FROM VAN WYCK EXPWY N/B","Q","Satisfactory","Not recorded","Not scour critical"],[40.743481,-73.836781,"f","RTE I495  FLUSHING RIVER","Q","Fair","Not recorded","Not scour critical"],[40.743917,-73.838242,"g","H.HARDING EXP W  FLUSHIN","Q","Satisfactory","Not recorded","Not scour critical"],[40.743372,-73.836125,"g","RTE I495  FLUSHING RIVER","Q","Satisfactory","Not recorded","Not scour critical"],[40.761833,-73.838639,"p","25A (EB) U-TURN  FLUSHIN","Q","Poor","Not recorded","Not scour critical"],[40.762489,-73.839375,"g","25AX  FLUSHING BAY PROME","Q","Good","Not recorded","Not scour critical"],[40.766111,-73.839208,"f","BOAT BASIN PLACE  FLUSHI","Q","Fair","2020-06","Not scour critical"],[40.758289,-73.850478,"f","FLUSHING BAY PROMENADE","Q","Fair","2022-04","Not scour critical"],[40.764561,-73.839722,"g","Whitestone Expressway Se","Q","Satisfactory","Not recorded","Stable - resistant m"],[40.635419,-74.016808,"f","15th Street  17th Street","B","Fair","Not recorded","9"],[40.837514,-73.880522,"g","Bronx River Ave.  RAMP I","B","Satisfactory","2023-04","Not scour critical"],[40.828675,-73.846539,"g","278IX1M54044  678IXM1101","B","Satisfactory","2024-09","Not scour critical"],[40.828917,-73.837158,"g","Brush Avenue  Ramp From","B","Satisfactory","2024-09","Not scour critical"],[40.829086,-73.837047,"g","I678  Bruckner Blvd  Bru","B","Satisfactory","2024-09","Not scour critical"],[40.845319,-73.928069,"g","87IX NB To 95IX SB  95IX","B","Good","Not recorded","Not scour critical"],[40.900861,-73.860944,"g","RTE 907H  BRONX RIVER  M","B","Satisfactory","Not recorded","Not scour critical"],[40.824814,-73.931186,"f","Harlem River  87IX1M1102","B","Fair","2024-07","Stable - resistant m"],[40.828083,-73.931992,"f","RAMP C  HARLEM RIVER  ME","B","Fair","2022-04","Stable - resistant m"],[40.576356,-74.190561,"g","FRESH KILLS  NORTH ACCES","S","Satisfactory","2020-08","Stable - resistant m"],[40.576394,-74.190208,"g","FRESH KILLS(E BR)  NORTH","S","Satisfactory","2020-08","Stable - resistant m"],[40.621767,-74.177353,"u","OLD PLACE CREEK","S",NaN,"Not recorded","Not scour critical"],[40.621725,-74.1765,"u","OLD PLACE CREEK","S",NaN,"Not recorded","Stable - resistant m"],[40.621711,-74.175167,"u","OLD PLACE CREEK","S",NaN,"Not recorded","Not scour critical"],[40.893236,-73.862611,"g","BRONX RIVER","B","Satisfactory","Not recorded","Stable - resistant m"],[40.898742,-73.861319,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.894097,-73.862428,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.876306,-73.870619,"g","Pedestrian Path  BRONX R","B","Satisfactory","Not recorded","Not scour critical"],[40.824708,-73.934531,"p","NYCTA IRT SUBWAY  HARLEM","M","Poor","2020-01","Stable - resistant m"],[40.557522,-74.204378,"u","CRK AT STA 182+70","S",NaN,"Not recorded","Not scour critical"],[40.725033,-73.933189,"e","LONG ISLAND RR  56TH RD","B","Very Good","Not recorded","Not scour critical"],[40.730881,-73.926314,"g","NYA - New York & Atlanti","B","Good","Not recorded","Not scour critical"],[40.747625,-73.968297,"f","EAST RIVER SHORE","M","Fair","2024-03","Stable - resistant m"],[40.837392,-73.879636,"e","BRONX RIVER","B","Excellent","Not recorded","Stable - resistant m"],[40.828081,-73.934681,"p","87I 87IX1M11022  RTE I87","M","Good","2022-05","Unknown - not evalua"],[40.76265,-73.836394,"p","678I X5M1 1075  678I X5M","Q","Poor","2022-05","Stable - resistant m"],[40.762808,-73.836422,"p","678I X5M1 1075  678I X5M","Q","Poor","2022-05","Stable - resistant m"],[40.822833,-73.884672,"p","BRONX RIVER","B","Satisfactory","2022-05","Unknown - not evalua"],[40.822686,-73.884564,"p","BRONX RIVER","B","Satisfactory","2022-05","Unknown - not evalua"],[40.8354,-73.882086,"p","RTE I895  BRONX RIVER  A","B","Poor","Not recorded","Not scour critical"],[40.846528,-73.92725,"g","Highbridge Park  907P X4","B","Satisfactory","Not recorded","Stable - resistant m"],[40.8685,-73.821539,"g","BARTOW AVENUE  HUTCHINSO","B","Satisfactory","2022-07","Stable - resistant m"],[40.887331,-73.824486,"p","Boston Post Local Road t","B","Poor","2024-09","Stable - resistant m"],[40.741686,-73.950156,"g","23RD STREET  27TH STREET","Q","Satisfactory","2023-05","Not scour critical"],[40.866833,-73.874367,"p","BRONX RIVER","B","Fair","Not recorded","Unknown - not evalua"],[40.586244,-73.911742,"g","GERRITSEN INLET","B","Good","2020-08","Stable - resistant m"],[40.604606,-73.899025,"g","Mill Basin","B","Good","2021-05","9"],[40.604628,-73.898381,"e","Mill Basin","B","Very Good","2021-05","9"],[40.621572,-73.897431,"e","Paedergat Basin","B","Very Good","2024-04","Not scour critical"],[40.621364,-73.896667,"e","Paerdegat Basin","B","Very Good","2024-04","Not scour critical"],[40.638386,-73.878739,"g","FRESH CREEK","B","Good","2024-06","Not scour critical"],[40.646497,-73.873869,"f","HENDRIX CREEK  SERVICE R","B","Fair","2023-04","Stable - resistant m"],[40.654797,-73.860269,"g","FOUNTAIN AVE  BETTS CREE","Q","Satisfactory","Not recorded","Stable - resistant m"],[40.703161,-74.007747,"g","EAST RIVER SHORELINE  SO","M","Satisfactory","2020-07","Stable - resistant m"],[40.708467,-73.998425,"g","RTE 907L  East River  SO","M","Satisfactory","Not recorded","Not scour critical"],[40.778858,-73.943233,"e","Bobby Wagner Walk  907L","M","Very Good","2023-01","Not scour critical"],[40.708097,-73.999506,"f","I278  FDR Drive  FDR Dri","M","Fair","2023-09","Not scour critical"],[40.709589,-73.991942,"g","278IX  FDR DRIVE  CHERRY","M","Good","2023-05","Not scour critical"],[40.709678,-73.992133,"f","278IX  FDR DRIVE  CHERRY","M","Fair","Not recorded","Stable - resistant m"],[40.714783,-73.976556,"g","FDR DRIVE  BARUCH DRIVE","M","Satisfactory","2023-06","Stable - resistant m"],[40.759072,-73.9594,"g","21ST STREET  22ND STREET","M","Satisfactory","Not recorded","Stable - resistant m"],[40.802881,-73.930422,"e","RFK Bridge to Harlem Riv","M","Very Good","2022-10","Stable - resistant m"],[40.807025,-73.933753,"e","Bruckner Blvd.  Harlem R","M","Very Good","2023-08","Not scour critical"],[40.814106,-73.933844,"g","RTE 907P  HARLEM RIVER","M","Good","2022-05","Stable - resistant m"],[40.819697,-73.934472,"e","CSX TRANS/OAK PT  HARLEM","M","Very Good","2023-06","Stable - resistant m"],[40.8625,-73.914242,"g","HARLEM RIVER","M","Good","2022-05","Stable - resistant m"],[40.873919,-73.910592,"g","METRO NO COMMUTER  HARLE","M","Satisfactory","2023-06","Stable - resistant m"],[40.828206,-73.8839,"g","NYCTA PELHAM LINE  BRONX","B","Satisfactory","2022-05","Stable - resistant m"],[40.863122,-73.815019,"f","HUTCHINSON RIVER","B","Fair","2020-08","Stable - resistant m"],[40.856594,-73.794367,"e","EASTCHESTER BAY","B","Very Good","Not recorded","Stable - resistant m"],[40.671667,-73.998819,"g","RTE I278  GOWANUS CANAL","B","Satisfactory","2024-06","Not scour critical"],[40.671567,-73.998306,"g","RTE I278  GOWANUS CANAL","B","Satisfactory","2024-06","Not scour critical"],[40.674042,-73.996325,"g","NYCTA F LINE  GOWANUS CA","B","Good","2024-08","Not scour critical"],[40.676222,-73.990353,"f","GOWANUS CANAL","B","Fair","Not recorded","Not scour critical"],[40.678253,-73.989322,"p","GOWANUS CANAL","B","Poor","2024-06","Stable with counterm"],[40.679542,-73.9885,"f","GOWANUS CANAL","B","Fair","Not recorded","Not scour critical"],[40.714178,-73.931461,"g","ENGLISH KILLS","B","Satisfactory","2022-09","Stable - resistant m"],[40.581328,-73.985714,"f","CONEY ISLAND CREE","B","Fair","Not recorded","Stable - resistant m"],[40.581794,-73.985856,"p","CONEY ISLAND CRK","B","Poor","2022-09","Stable - resistant m"],[40.67425,-73.988686,"g","GOWANUS CANAL","B","Satisfactory","Not recorded","Stable - resistant m"],[40.566839,-74.169744,"f","RICHMOND CREEK","S","Fair","Not recorded","Stable - resistant m"],[40.733139,-73.940828,"g","NEWTOWN CREEK  Atlantic","B","Satisfactory","2023-04","Not scour critical"],[40.716581,-73.922344,"g","NEWTOWN CREEK","B","Satisfactory","2023-08","Not scour critical"],[40.739067,-73.942747,"g","DUTCH KILLS","Q","Satisfactory","2023-05","Not scour critical"],[40.7634,-73.75175,"p","ALLEY CREEK","Q","Satisfactory","Not recorded","Stable with counterm"],[40.740914,-73.940842,"g","DUTCH KILLS CREEK","Q","Good","2023-05","Stable - resistant m"],[40.6453,-73.836406,"g","JAMAICA BAY","Q","Satisfactory","2024-05","Stable - resistant m"],[40.757036,-73.838614,"g","678I678IX5M11071  NYCTA","Q","Satisfactory","2021-08","Stable - resistant m"],[40.582194,-73.982469,"g","CONEY ISLND CREEK","B","Good","Not recorded","Stable - resistant m"],[40.738894,-73.952642,"f","11TH STREET  50TH AVENUE","B","Fair","2023-08","Not scour critical"],[40.763825,-73.946561,"g","36TH AVE  EAST RIVER  RO","Q","Good","2023-10","Stable - resistant m"],[40.786653,-73.885206,"f","RIKERS IS.CHANNEL  RIKER","Q","Fair","2021-06","Stable - resistant m"],[40.906247,-73.856508,"f","MNRR HARLEM LINE  Bronx","B","Fair","Not recorded","Not scour critical"],[40.855406,-73.876781,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.8785,-73.869253,"f","BRONX RIVER","B","Fair","2023-04","Not scour critical"],[40.878419,-73.869122,"f","BRONX RIVER","B","Fair","2023-04","Not scour critical"],[40.876325,-73.870286,"f","Pedestrian Walkway  BRON","B","Fair","2023-04","Not scour critical"],[40.876364,-73.870081,"g","BRONX RIVER","B","Satisfactory","2023-04","Not scour critical"],[40.871686,-73.872772,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.867733,-73.876478,"g","TWIN LAKES","B","Satisfactory","Not recorded","Stable - resistant m"],[40.852942,-73.874044,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.839897,-73.878344,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.866189,-73.875128,"p","BRONX RIVER","B","Fair","2023-04","Stable with counterm"],[40.861197,-73.875578,"p","Pedestrian Foot Path  BR","B","Fair","Not recorded","Unknown - not evalua"],[40.838803,-73.878839,"g","BRONX RIVER","B","Good","Not recorded","Not scour critical"],[40.842339,-73.876953,"f","BRONX RIVER","B","Fair","Not recorded","Not scour critical"],[40.877908,-73.868517,"g","BRONX RIVER","B","Satisfactory","Not recorded","Not scour critical"],[40.894897,-73.862156,"f","BRONX RIVER","B","Fair","Not recorded","Not scour critical"],[40.662344,-73.969119,"g","PROSPCT PK STREAM","B","Good","Not recorded","9"],[40.77865,-73.972439,"g","FEEDER TO LAKE","M","Satisfactory","Not recorded","Stable - resistant m"],[40.795867,-73.953533,"f","THE LOCH","M","Fair","Not recorded","Stable - resistant m"],[40.873656,-73.919342,"g","HARLEM RIV INLET","M","Good","Not recorded","Stable - resistant m"],[40.745206,-73.837272,"p","STREAM N OF LIE","Q","Poor","Not recorded","Not scour critical"],[40.656169,-73.830469,"g","HAWTREE BASIN","Q","Good","Not recorded","Stable - resistant m"],[40.728728,-73.834214,"p","MEADOW LAKE","Q","Poor","Not recorded","Stable - resistant m"],[40.645406,-73.748456,"p","THURSTON BSN INLT","Q",NaN,"2024-08","Stable with counterm"],[40.738644,-73.838211,"g","AQUACADE LAKE","Q","Satisfactory","Not recorded","Stable - resistant m"],[40.518522,-74.234619,"e","SIRT SOUTH SHORE  TIDAL","S","Very Good","Not recorded","Stable - resistant m"],[40.622792,-74.118369,"u","RICHMOND LAKE DAM","S",NaN,"Not recorded","Not scour critical"],[40.627344,-74.122664,"f","CLOVE LK PK STRM","S","Fair","Not recorded","Not scour critical"],[40.517672,-74.201108,"g","LEMON CREEK","S","Good","Not recorded","Not scour critical"],[40.520033,-74.239822,"p","ARTHUR KILL STRM","S","Fair","Not recorded","Stable with counterm"],[40.577453,-74.084075,"f","NEW CREEK","S","Fair","Not recorded","Not scour critical"],[40.598386,-74.175594,"f","MAIN CREEK","S","Fair","Not recorded","Not scour critical"],[40.608128,-74.188614,"g","SAWMILL CREEK","S","Good","Not recorded","Not scour critical"],[40.748056,-73.967964,"p","EAST RIVER SHORE","M","Fair","Not recorded","Stable with counterm"],[40.525358,-74.209389,"u","LEMON CREEK","S",NaN,"Not recorded","Stable - resistant m"],[40.752706,-73.839978,"f","TIDE GATE DAM","Q","Fair","2021-11","Stable - resistant m"],[40.635044,-73.739797,"g","HOOK CREEK","Q","Good","2023-04","Stable - resistant m"],[40.885297,-73.820797,"g","HOLLERS AVENUE  EASTCHES","B","Good","Not recorded","Not scour critical"],[40.800922,-73.929094,"f","FROM HARLEM RV DR  QNS T","M","Fair","2022-10","Stable - resistant m"],[40.609406,-74.036092,"f","907C 907CX2M13033  RTE I","S","Fair","2020-10","Stable - resistant m"],[40.609308,-74.036003,"f","RTE I278  THE NARROWS","S","Fair","Not recorded","Stable - resistant m"],[40.797078,-73.826622,"g","3RD AVE  HUTCHINSON RIVE","Q","Satisfactory","2022-08","Stable - resistant m"],[40.59045,-73.819425,"p","JAMAICA BAY","Q","Satisfactory","2022-09","Stable with counterm"],[40.588325,-73.817658,"p","JAMAICA BAY  SEAWALL PRO","Q","Fair","2022-09","Stable with counterm"],[40.58825,-73.818914,"p","JAMAICA BAY","Q","Satisfactory","2022-09","Stable with counterm"],[40.588031,-73.819119,"p","CROSS BAY BR APPR  SEAWA","Q","Satisfactory","2022-09","Stable with counterm"],[40.587914,-73.819339,"p","SEAWALL PROMENADE  JAMAI","Q","Satisfactory","2022-09","Stable with counterm"],[40.578169,-73.887756,"c","ROCKAWAY INLET","Q","Fair","Not recorded","Scour critical"],[40.878181,-73.921508,"f","Edsall Avenue  Palisade","M","Fair","Not recorded","Not scour critical"],[40.878342,-73.921369,"g","Henry Hudson Parkway Sou","M","Satisfactory","Not recorded","Not scour critical"],[40.804664,-73.793731,"p","Cross Island Parkway  Cr","Q","Fair","2022-10","Stable with counterm"],[40.788269,-73.790569,"f","Cross Island Pkwy S/B  C","Q","Fair","2022-08","Stable - resistant m"],[40.798833,-73.919189,"g","BRONX KILLS  CSX  Harlem","Q","Satisfactory","Not recorded","Stable - resistant m"],[40.851747,-73.951992,"f","Amtrak Railroad  Fort Wa","M","Fair","Not recorded","Stable - resistant m"],[40.849753,-73.943214,"f","Amtrak Railroad  Fort Wa","M","Fair","2023-07","Stable - resistant m"],[40.639469,-74.143211,"g","KILL VAN KULL","S","Good","2021-09","Stable - resistant m"],[40.634028,-74.194342,"e","ARTHUR KILL","S","Very Good","2022-06","Stable - resistant m"],[40.633822,-74.194528,"e","ARTHUR KILL","S","Very Good","2022-06","Stable - resistant m"],[40.633972,-74.194389,"e","GULF AVENUE  OLD PLACE C","S","Very Good","Not recorded","Not scour critical"],[40.63375,-74.194608,"e","GULF AVENUE  OLD PLACE C","S","Very Good","Not recorded","Not scour critical"],[40.524986,-74.24395,"g","ARTHUR KILL","S","Satisfactory","2022-09","Stable - resistant m"],[40.660569,-73.805817,"u","JFK-JB1","Q",NaN,"Not recorded","Not scour critical"],[40.663803,-73.797522,"u","JFK-JB2","Q",NaN,"Not recorded","Not scour critical"],[40.664561,-73.795325,"u","JFK-JB2","Q",NaN,"Not recorded","Not scour critical"],[40.650481,-73.759767,"u","JFK-JT1","Q",NaN,"Not recorded","Not scour critical"],[40.660286,-73.808567,"u","JFK-JB1","Q",NaN,"Not recorded","Not scour critical"],[40.660344,-73.8107,"u","JFK-JB1","Q",NaN,"Not recorded","Not scour critical"],[40.64635,-73.801133,"u","JFK-JJ1","Q",NaN,"Not recorded","Not scour critical"],[40.633883,-74.182589,"f","Tidal Creek","S","Fair","Not recorded","Stable - resistant m"],[40.639164,-74.183336,"g","Tidal Creek","S","Good","Not recorded","Not scour critical"],[40.642194,-74.1837,"g","Tidal Creek","S","Good","Not recorded","Not scour critical"]];
+const BRIDGES_CITY = [[40.78975382,-73.82243394,"g","WHITESTONE EXP NB","Q","GOOD","2018","$11.2M"],[40.8289655,-73.84271079,"f","BRUCKNER EXPWY SVC RD","B","FAIR","2018","$157.5M"],[40.9008213,-73.86084754,"f","NEREID AVE (E 240TH ST)","B","FAIR","2017","$261.6M"],[40.82810953,-73.93392084,"f","MACOMBS DAM BRIDGE","B","FAIR","2017","$990.0M"],[40.74297308,-73.87409987,"e","91 PLACE (2247010)","Q","VGOOD","2017","$12.4M"],[40.72349421,-73.85588635,"f","67 AVE PED BR (2247200)","Q","FAIR","2018","$5.8M"],[40.74130124,-73.95001741,"p","51 AVE PED BR (2247280)","Q","POOR","2018","$3.1M"],[40.71271276,-73.90037355,"f","METROPOLITAN AVE","Q","FAIR","2018","$92.9M"],[40.76282399,-73.83692912,"f","NORTHERN BLVD WB","Q","FAIR","2018","$323.6M"],[40.76260222,-73.83696302,"f","NORTHERN BLVD EB","Q","FAIR","2018","$355.0M"],[40.76310233,-73.83896721,"f","N.BLVD WB TO 678I SB","Q","FAIR","2018","$38.7M"],[40.8540653,-73.87186447,"f","BRONX RIVER PKWY","B","FAIR","2017","$30.0M"],[40.72578524,-73.89973157,"f","HAMILTON PLACE","Q","FAIR","2018","$50.8M"],[40.72545527,-73.89617463,"f","GRAND AVE","Q","FAIR","2018","$57.8M"],[40.72533553,-73.8948885,"g","69TH STREET","Q","GOOD","2017","$46.5M"],[40.73189049,-73.87123043,"f","495I  (2066000)","Q","FAIR","2017","$113.4M"],[40.66397749,-73.99061224,"g","5TH AVE","B","GOOD","2018","$39.6M"],[40.8244058,-73.87255043,"g","BRUCKNER EXPWY SB","B","GOOD","2017","$55.8M"],[40.82434224,-73.87252108,"g","BRUCKNER EXPWY NB","B","GOOD","2017","$100.3M"],[40.83539444,-73.88207473,"f","E 174TH ST","B","FAIR","2018","$206.7M"],[40.83546321,-73.88222277,"f","174TH ST-NTH PED BRDG","B","FAIR","2018","$8.1M"],[40.83532774,-73.88177147,"f","174TH ST-STH PED BRDG","B","FAIR","2018","$8.6M"],[40.84677138,-73.92788109,"g","WASHINGTON BRIDGE","B","GOOD","2017","$577.5M"],[40.82237037,-73.88686709,"g","BRUCKNER EXPWY SB","B","GOOD","2018","$52.2M"],[40.8225934,-73.88681332,"g","BRUCKNER EXPWY NB","B","GOOD","2018","$49.0M"],[40.84068108,-73.83842805,"f","E TREMONT AVE","B","FAIR","2017","$45.9M"],[40.8428263,-73.83773708,"f","WESTCHESTER AVE","B","FAIR","2018","$71.4M"],[40.85602492,-73.83280441,"f","BRONX PELHAM PKWY","B","FAIR","2018","$81.3M"],[40.86845024,-73.8215405,"f","HUTCHINSON RVR PKWY","B","FAIR","2017","$270.9M"],[40.82820447,-73.83695116,"g","BE NB SERVICE RD","B","GOOD","2017","$35.1M"],[40.82985913,-73.83755544,"e","BE SB SERVICE RD","B","VGOOD","2018","$31.9M"],[40.84186104,-73.92932634,"f","DEPOT PLACE","B","FAIR","2018","$119.5M"],[40.80087679,-73.9176072,"e","BRUCKNER EXPWY","B","VGOOD","2017","$17.1M"],[40.78075623,-73.98668142,"f","HHP VIADUCT","M","FAIR","2018","$960.0M"],[40.78131638,-73.98621459,"f","PED BR AT W 73RD ST","M","FAIR","2018","$16.6M"],[40.78099891,-73.98706611,"e","W72ND ST RAMP TO HHP NB","M","VGOOD","2018","$7.9M"],[40.78517639,-73.98319797,"f","W 79 ST","M","FAIR","2018","$20.2M"],[40.78895757,-73.98246962,"e","HHP","M","VGOOD","2018","$10.2M"],[40.79819228,-73.97582771,"g","HHP SB","M","GOOD","2018","$9.0M"],[40.79618658,-73.97599046,"g","HHP NB","M","GOOD","2018","$9.0M"],[40.79534103,-73.97787083,"e","HHP SB","M","VGOOD","2018","$9.4M"],[40.79803777,-73.97505305,"e","HHP NB","M","VGOOD","2018","$9.0M"],[40.8365723,-73.94906735,"f","HHP","M","FAIR","2018","$630.0M"],[40.86698709,-73.93147637,"f","RAMP TO N.B. HHP","M","FAIR","2017","$48.6M"],[40.85218717,-73.94225934,"f","W 181ST ST PED BRDG","M","FAIR","2018","$6.8M"],[40.8806066,-73.91821691,"g","HHP","B","GOOD","2017","$22.6M"],[40.88465609,-73.91468107,"e","W 232ND ST","B","VGOOD","2017","$22.1M"],[40.88704137,-73.91203439,"f","W 236TH ST PED BRDG","B","FAIR","2018","$11.2M"],[40.88935473,-73.90875725,"g","W 239TH ST","B","GOOD","2017","$27.4M"],[40.89120519,-73.90794017,"e","MANHATTAN COLL PKWY","B","VGOOD","2017","$27.9M"],[40.89360562,-73.90797016,"g","W 246TH ST","B","GOOD","2017","$25.2M"],[40.89925607,-73.90690609,"g","W 252ND ST","B","GOOD","2018","$20.2M"],[40.90067966,-73.90580081,"e","RIVERDALE AVE","B","VGOOD","2017","$23.4M"],[40.90124342,-73.90187529,"e","FIELDSTON ROAD","B","VGOOD","2017","$29.7M"],[40.90029338,-73.89700403,"g","HHP","B","GOOD","2017","$33.8M"],[40.89953404,-73.89328996,"f","VAN CRTLDT PARK","B","FAIR","2018","$17.6M"],[40.89976513,-73.89127569,"f","VAN CRTLDT EQUES","B","FAIR","2018","$9.4M"],[40.85644956,-73.83537936,"g","BRONX PELHAM PKWY","B","GOOD","2016","$110.7M"],[40.88744382,-73.82456326,"f","BOSTON ROAD","B","FAIR","2018","$430.6M"],[40.67980022,-73.89686619,"g","HIGHLAND BLVD E.B.","B","GOOD","2018","$22.1M"],[40.67981491,-73.89695475,"f","HIGHLAND BLVD W.B.","B","FAIR","2018","$15.8M"],[40.6798376,-73.89684682,"f","HIGHLAND BLVD W.B.","B","FAIR","2018","$21.1M"],[40.69224114,-73.88238102,"g","CYPRESS HILLS ST","Q","GOOD","2018","$22.9M"],[40.69620411,-73.87473357,"f","JACKIE ROBINSON PKWY","Q","FAIR","2018","$17.3M"],[40.70293491,-73.85824109,"e","MYRTLE AVE","Q","VGOOD","2018","$28.6M"],[40.70897037,-73.84152545,"e","JACKIE ROBINSON PKWY","Q","VGOOD","2018","$39.0M"],[40.71068165,-73.83742852,"g","UNION TPKE","Q","GOOD","2018","$24.4M"],[40.71175014,-73.83606828,"f","MARKWOOD ROAD","Q","FAIR","2018","$19.8M"],[40.71434557,-73.83106985,"g","QUEENS BLVD","Q","GOOD","2018","$138.9M"],[40.68026272,-73.895987,"g","HIGHLAND BLVD NB","B","GOOD","2017","$18.0M"],[40.86684177,-73.87426426,"g","MOSHOLU PARKWAY","B","GOOD","2018","$73.3M"],[40.8680339,-73.87967882,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$40.0M"],[40.86919649,-73.88038413,"g","MOSHOLU PARKWAY","B","GOOD","2017","$38.2M"],[40.87974374,-73.88465862,"g","JEROME AVE","B","GOOD","2017","$53.1M"],[40.89941612,-73.88531466,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$19.4M"],[40.90028379,-73.88648521,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$20.7M"],[40.90021797,-73.89006454,"f","MOSHOLU PARKWAY","B","FAIR","2017","$33.3M"],[40.68193846,-74.00245172,"f","SUMMIT ST PED BRDG","B","FAIR","2018","$6.3M"],[40.68395664,-74.00146891,"g","UNION ST","B","GOOD","2018","$22.3M"],[40.68457472,-74.0011302,"g","SACKETT ST","B","GOOD","2018","$22.3M"],[40.68730704,-73.99987844,"g","KANE ST","B","GOOD","2018","$22.5M"],[40.68914782,-73.99889381,"e","CONGRESS ST","B","VGOOD","2018","$22.5M"],[40.70152952,-73.9897951,"e","278I EB (B.Q.E.)","B","VGOOD","2018","$11.2M"],[40.70126446,-73.98982406,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$11.2M"],[40.70062963,-73.98696616,"e","278I  (B.Q.E.) RAMP TO BKLN BR","B","VGOOD","2018","$5.0M"],[40.70159544,-73.98859381,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$11.5M"],[40.70135115,-73.9885671,"e","278I EB (B.Q.E.)","B","VGOOD","2018","$11.8M"],[40.70117214,-73.98783071,"g","278I  (B.Q.E.)","B","GOOD","2018","$20.2M"],[40.7010523,-73.98678575,"e","278I  (B.Q.E.)","B","VGOOD","2018","$22.9M"],[40.70056831,-73.98536931,"f","278I  (B.Q.E.)","B","FAIR","2018","$39.1M"],[40.69980932,-73.98458489,"g","278I  (B.Q.E.)","B","GOOD","2018","$49.6M"],[40.69901435,-73.98412942,"g","278I  (B.Q.E.)","B","GOOD","2018","$5.9M"],[40.69836743,-73.98304288,"g","278I  (B.Q.E.)","B","GOOD","2018","$232.6M"],[40.74010095,-73.89975075,"g","65TH PLACE","Q","GOOD","2018","$52.5M"],[40.74082285,-73.89888511,"g","QUEENS BLVD","Q","GOOD","2018","$1179.9M"],[40.74287518,-73.89637522,"g","WOODSIDE AVE","Q","GOOD","2018","$32.9M"],[40.74335807,-73.89573675,"g","69TH ST","Q","GOOD","2018","$56.7M"],[40.74418221,-73.89494015,"g","70TH ST","Q","GOOD","2018","$38.6M"],[40.74473489,-73.89467639,"e","41ST AVE","Q","VGOOD","2018","$38.0M"],[40.74647793,-73.89498682,"g","ROOSEVELT AVE","Q","GOOD","2017","$49.6M"],[40.74875731,-73.8962783,"g","BROADWAY / 37TH AVE","Q","GOOD","2018","$72.0M"],[40.76898882,-73.91076614,"e","STEINWAY ST","Q","VGOOD","2018","$23.5M"],[40.76923811,-73.910454,"e","STEINWAY ST","Q","VGOOD","2018","$23.2M"],[40.76945002,-73.91269515,"g","37TH ST","Q","GOOD","2018","$23.0M"],[40.76973676,-73.91461667,"f","35TH ST","Q","FAIR","2018","$38.4M"],[40.77014718,-73.91666266,"f","32ND ST","Q","FAIR","2017","$36.5M"],[40.77057477,-73.91751791,"g","31ST ST","Q","GOOD","2018","$44.8M"],[40.75050813,-73.89717687,"e","278I  (B.Q.E.)","Q","VGOOD","2017","$60.9M"],[40.75242116,-73.89756875,"g","278I  (B.Q.E.)","Q","GOOD","2017","$35.1M"],[40.75624719,-73.89949124,"e","278I SB  (BQE WEST LEG)","Q","VGOOD","2017","$23.6M"],[40.75620238,-73.89988563,"g","278I SB  (BQE EAST LEG)","Q","GOOD","2017","$94.0M"],[40.75779269,-73.89972975,"g","31ST AVE","Q","GOOD","2017","$26.4M"],[40.75771145,-73.90051998,"e","278I SB (BQE WEST LEG)","Q","VGOOD","2017","$23.6M"],[40.75766785,-73.90095286,"e","278I SB (BQE EAST LEG)","Q","VGOOD","2017","$19.0M"],[40.75958503,-73.90138315,"e","278I (BQE WEST LEG)","Q","VGOOD","2017","$27.9M"],[40.75959202,-73.90152711,"e","278I (BQE EAST LEG)","Q","VGOOD","2017","$31.8M"],[40.76083754,-73.9019632,"g","BULOVA AVE","Q","GOOD","2018","$14.8M"],[40.76595733,-73.90341076,"g","49TH ST","Q","GOOD","2018","$23.9M"],[40.76858696,-73.90478702,"f","ASTORIA BLVD EB","Q","FAIR","2017","$36.9M"],[40.76799668,-73.9039856,"f","47TH ST","Q","FAIR","2018","$26.2M"],[40.76849153,-73.90505067,"f","278I NB (BQE WEST LEG)","Q","FAIR","2018","$32.3M"],[40.7686579,-73.906977,"f","44TH ST","Q","FAIR","2018","$25.1M"],[40.69377699,-73.9988382,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$9.4M"],[40.69385207,-73.99919506,"g","278I EB (B.Q.E.)","B","GOOD","2017","$11.5M"],[40.74099875,-73.9019056,"g","QUEENS BLVD","Q","GOOD","2018","$51.2M"],[40.70075749,-73.99511395,"g","COLUMBIA HEIGHTS","B","GOOD","2018","$54.4M"],[40.7015132,-73.98974312,"f","278I W.B.  (B.Q.E.)","B","FAIR","2018","$20.2M"],[40.70154032,-73.98975454,"g","278I E.B.  (B.Q.E.)","B","GOOD","2018","$20.2M"],[40.76758402,-73.90187083,"g","49TH ST","Q","GOOD","2018","$28.6M"],[40.63897368,-74.03645498,"e","BSHP","B","VGOOD","2018","$22.6M"],[40.62956619,-74.04005644,"f","81ST ST PED BRDG","B","FAIR","2018","$13.9M"],[40.62073814,-74.04043689,"f","92ND ST PED BRDG","B","FAIR","2018","$13.5M"],[40.61066226,-74.03563055,"g","4TH AVE","B","GOOD","2018","$27.4M"],[40.60373951,-74.01912189,"e","BAY 8TH ST","B","VGOOD","2017","$22.3M"],[40.60212515,-74.01152669,"f","17TH AVE PED BRDG","B","FAIR","2018","$9.4M"],[40.59597343,-73.99995576,"f","BSHP","B","FAIR","2017","$32.4M"],[40.58977022,-73.99283977,"e","BSHP","B","VGOOD","2018","$30.1M"],[40.58776735,-73.99150039,"f","27TH AVE PED BRDG","B","FAIR","2018","$9.4M"],[40.58417413,-73.9868095,"g","CROPSEY AVE","B","GOOD","2018","$59.0M"],[40.58396242,-73.96673993,"e","BSHP","B","VGOOD","2018","$133.4M"],[40.58417292,-73.96193426,"e","GUIDER AV RAMP TO BSHP","B","VGOOD","2018","$48.7M"],[40.5846443,-73.9601481,"g","CONEY ISLAND AVE","B","GOOD","2017","$89.4M"],[40.58502939,-73.95761271,"g","E 12TH ST","B","GOOD","2018","$71.6M"],[40.58455035,-73.95093864,"f","BSHP","B","FAIR","2018","$30.6M"],[40.58457561,-73.94855443,"f","BSHP","B","FAIR","2018","$63.0M"],[40.58495562,-73.94379834,"f","BSHP","B","FAIR","2018","$53.7M"],[40.58571369,-73.93910441,"f","BSHP","B","FAIR","2018","$50.2M"],[40.58571514,-73.93132159,"f","KNAPP ST","B","FAIR","2018","$42.3M"],[40.58583731,-73.91255296,"e","BSHP","B","VGOOD","2018","$270.1M"],[40.59655596,-73.90782371,"e","FLATBUSH AVE","B","VGOOD","2017","$63.3M"],[40.60442294,-73.89941344,"e","BSHP WB","B","VGOOD","2018","$644.7M"],[40.60465756,-73.89869239,"e","BSHP EB","B","VGOOD","2018","$860.8M"],[40.62209339,-73.89684439,"e","BSHP WB","B","VGOOD","2017","$226.5M"],[40.62211361,-73.89655172,"e","BSHP EB","B","VGOOD","2018","$370.4M"],[40.63048317,-73.88596385,"e","BSHP","B","VGOOD","2018","$46.7M"],[40.63822469,-73.87857623,"e","BSHP","B","VGOOD","2017","$180.4M"],[40.64331636,-73.87618193,"g","PENNSYLVANIA AVE","B","GOOD","2017","$29.9M"],[40.66608668,-73.84157881,"f","CROSS BAY BLVD","Q","FAIR","2018","$111.1M"],[40.66690913,-73.83876661,"g","S CONDUIT BLVD","Q","GOOD","2018","$71.0M"],[40.66638862,-73.83486324,"g","COHANCY ST","Q","GOOD","2018","$29.0M"],[40.66663508,-73.81045293,"g","130TH ST","Q","GOOD","2018","$30.6M"],[40.66744078,-73.77115229,"g","GUY R. BREWER BLVD","Q","GOOD","2017","$55.5M"],[40.66697383,-73.76698084,"g","FARMERS BLVD","Q","GOOD","2018","$28.8M"],[40.66596758,-73.75798884,"g","SPRINGFIELD BLVD","Q","GOOD","2018","$38.2M"],[40.66583833,-73.7521331,"g","225TH ST","Q","GOOD","2018","$31.4M"],[40.66590948,-73.74076632,"f","SUNRISE HWY W.B.","Q","FAIR","2018","$18.4M"],[40.66599284,-73.74116099,"f","SUNRISE HWY W.B.","Q","FAIR","2018","$24.6M"],[40.66642889,-73.73987456,"f","N CONDUIT AVE WB","Q","FAIR","2018","$18.0M"],[40.66632975,-73.74039741,"g","N CONDUIT AVE WB","Q","GOOD","2018","$29.3M"],[40.66852028,-73.73791417,"f","FRANCIS LEWIS BLVD","Q","FAIR","2018","$27.0M"],[40.66880201,-73.73811877,"g","FRANCIS LEWIS BLVD","Q","GOOD","2018","$26.9M"],[40.67379332,-73.73427036,"g","MERRICK BLVD","Q","GOOD","2018","$26.9M"],[40.67379727,-73.73459124,"g","MERRICK BLVD","Q","GOOD","2018","$27.0M"],[40.67867772,-73.72970945,"g","130TH AVE","Q","GOOD","2018","$19.8M"],[40.67884179,-73.72992541,"f","130TH AVE","Q","FAIR","2018","$19.8M"],[40.69067126,-73.72668236,"f","LINDEN BLVD","Q","FAIR","2018","$30.2M"],[40.69703838,-73.72702245,"f","BCIP","Q","FAIR","2018","$32.9M"],[40.70580637,-73.72725539,"g","BELMONT PARK SO. RAMP","Q","GOOD","2018","$14.2M"],[40.71127832,-73.72859238,"f","HEMPSTEAD AVE","Q","FAIR","2018","$63.9M"],[40.71921667,-73.72650446,"f","BELMONT PARK NO. RAMP","Q","FAIR","2018","$15.3M"],[40.72057917,-73.7257088,"g","SUPERIOR ROAD","Q","GOOD","2018","$30.8M"],[40.72438747,-73.72458877,"f","JAMAICA AVE","Q","FAIR","2018","$55.1M"],[40.72545733,-73.72440578,"f","BRADDOCK AVE","Q","FAIR","2018","$47.7M"],[40.73421739,-73.72264186,"f","HILLSIDE AVE","Q","FAIR","2018","$43.5M"],[40.74089099,-73.72665982,"f","UNION TPKE","Q","FAIR","2018","$75.2M"],[40.75167236,-73.74265744,"g","W ALLEY ROAD","Q","GOOD","2017","$32.4M"],[40.76228374,-73.75696756,"g","NORTHERN BLVD","Q","GOOD","2018","$42.3M"],[40.77233914,-73.7640712,"f","CROCHERON PK PED","Q","FAIR","2018","$10.3M"],[40.77870465,-73.76828178,"f","28TH AVE PED BRDG","Q","FAIR","2018","$34.2M"],[40.78940089,-73.78204091,"f","BCIP","Q","FAIR","2018","$22.1M"],[40.78632203,-73.79499186,"f","UTOPIA PKWY","Q","FAIR","2018","$32.4M"],[40.78607419,-73.80238142,"g","160TH ST","Q","GOOD","2017","$25.1M"],[40.78636751,-73.80621688,"f","FRANCIS LEWIS BLVD","Q","FAIR","2018","$41.0M"],[40.78674158,-73.81006296,"f","CLINTONVILLE ST","Q","FAIR","2018","$33.3M"],[40.7871826,-73.81332864,"f","150TH ST","Q","FAIR","2018","$26.6M"],[40.78786511,-73.81595335,"f","149TH ST","Q","FAIR","2018","$27.9M"],[40.78815244,-73.81678347,"f","14TH AVE","Q","FAIR","2018","$36.5M"],[40.78921242,-73.81937373,"f","147TH ST","Q","FAIR","2018","$28.4M"],[40.70722444,-74.00075556,"f","FDR DR N.B. OFF RMP","M","FAIR","2018","$125.0M"],[40.70811706,-73.99993836,"f","STH ST RMP TO FDR S.B.","M","FAIR","2018","$48.0M"],[40.70850062,-73.99923437,"g","FDR DR S.B. OFF RMP","M","GOOD","2018","$53.7M"],[40.7081832,-73.99898422,"f","RAMP TO N.B. FDR DRIVE","M","FAIR","2018","$71.2M"],[40.71163585,-73.97843975,"f","CORLEARS PARK ROAD","M","FAIR","2018","$18.5M"],[40.71448332,-73.97664216,"f","DELANCEY ST PED BRDG","M","FAIR","2018","$15.3M"],[40.71891742,-73.97498821,"e","HOUSTON ST","M","VGOOD","2017","$50.3M"],[40.71794792,-73.97488648,"g","FDR NB RAMP TO HOUSTON ST","M","GOOD","2018","$33.5M"],[40.71998493,-73.9745804,"g","HOUSTON ST RAMP TO FDR NB","M","GOOD","2018","$32.2M"],[40.72162602,-73.97477087,"f","E 6TH ST PED BRDG","M","FAIR","2018","$9.9M"],[40.73696484,-73.9747377,"f","E 25TH ST PED BRDG","M","FAIR","2018","$7.7M"],[40.7535603,-73.96332489,"f","E 51ST ST PED BRDG","M","FAIR","2018","$12.6M"],[40.76117673,-73.95584184,"g","E 63TH ST PED BRDG","M","GOOD","2017","$9.4M"],[40.76520417,-73.95205029,"f","E 71ST ST PED BRDG","M","FAIR","2018","$16.6M"],[40.76956015,-73.94829654,"e","E 78TH ST PED BRDG","M","VGOOD","2018","$23.5M"],[40.77141457,-73.94627204,"f","PROMENADE OVER FDR","M","FAIR","2017","$418.5M"],[40.78678724,-73.93877573,"f","E 103RD ST PED BRDG","M","FAIR","2018","$30.6M"],[40.79170432,-73.9354072,"f","E 111TH ST PED BRDG","M","FAIR","2018","$19.1M"],[40.79689701,-73.92928583,"f","E 120TH ST PED BRDG","M","FAIR","2018","$17.9M"],[40.7240792,-73.97331085,"f","E 10TH ST PED BRDG","M","FAIR","2018","$12.4M"],[40.76014258,-73.95745329,"e","FDR DRIVE SB","M","VGOOD","2018","$296.2M"],[40.75903627,-73.95865082,"f","E 60TH ST","M","FAIR","2017","$103.5M"],[40.80301812,-73.93059917,"e","HARLEM RIVER DRIVE SB","M","VGOOD","2018","$252.2M"],[40.58507262,-73.95424704,"f","E 14 ST PED BRDG","B","FAIR","2018","$21.1M"],[40.70556588,-73.99613759,"f","BROOKLYN BRIDGE","B","FAIR","2018","$2267.0M"],[40.71176869,-74.00443994,"g","PARK ROW TO BKLN","M","GOOD","2018","$41.9M"],[40.71026852,-74.0025179,"g","TO BKLN FRM FDR","M","GOOD","2018","$284.6M"],[40.71023938,-74.00237546,"f","PEARL ST TO BKLN","M","FAIR","2018","$28.6M"],[40.70959779,-74.00103109,"f","TO FDR DR N.B.","M","FAIR","2018","$257.5M"],[40.71081996,-74.00210705,"g","TO PEARL ST","M","GOOD","2018","$24.7M"],[40.70929967,-74.00038198,"g","PEARL ST TO FDR DR","M","GOOD","2018","$23.4M"],[40.71167519,-74.00366541,"g","TO PARK ROW","M","GOOD","2018","$74.6M"],[40.70666004,-73.99020719,"f","MANHATTAN BRIDGE(LL)","B","FAIR","2018","$2773.8M"],[40.70636205,-73.99015939,"f","MANHATTAN BRIDGE(UL)","B","FAIR","2018","$2643.4M"],[40.71330356,-73.9712022,"f","WILLIAMSBURG BRIDGE","B","FAIR","2018","$3708.0M"],[40.7566178,-73.95416959,"f","QUEENSBORO BRIDGE (LL)","M","FAIR","2018","$2821.1M"],[40.75671703,-73.95390187,"f","QUEENSBORO BRIDGE (UL)","M","FAIR","2018","$1450.3M"],[40.76025735,-73.96146605,"e","TO E 60TH ST FROM QNS","M","VGOOD","2018","$66.7M"],[40.75984551,-73.96175864,"e","TO QNS FROM E 59TH ST","M","VGOOD","2018","$66.7M"],[40.76091156,-73.96273057,"g","TO E 62ND ST FROM QNS","M","GOOD","2018","$82.4M"],[40.76048202,-73.9633563,"g","TO QNS FROM E 58TH ST","M","GOOD","2018","$67.7M"],[40.74853055,-73.93777658,"f","TO NY FR THOMSON AVE","Q","FAIR","2018","$470.7M"],[40.75181402,-73.94447061,"f","TO NY FROM 21ST ST","Q","FAIR","2018","$285.1M"],[40.75739844,-73.95383726,"f","TO NY FROM 11TH ST","Q","FAIR","2018","$37.8M"],[40.75155253,-73.94298769,"f","TO 21ST ST FROM NY","Q","FAIR","2018","$216.4M"],[40.74643402,-73.94014856,"f","TO THOMSON AVE FROM NY","Q","FAIR","2018","$265.9M"],[40.75681452,-73.9544077,"g","25X TO/FROM 2ND AVE","M","GOOD","2018","$190.4M"],[40.80359516,-73.92936199,"e","WILLIS AVE BRIDGE","B","VGOOD","2018","$770.0M"],[40.80168508,-73.92999585,"e","RAMP FROM FDR DRIVE","M","VGOOD","2018","$113.5M"],[40.80562171,-73.92515623,"e","TO BRUCKNER BLVD","B","VGOOD","2017","$90.0M"],[40.80748487,-73.93264964,"g","THIRD AVE BRIDGE","B","GOOD","2018","$384.2M"],[40.80820471,-73.93079892,"e","FROM BRUCKNER BLVD","B","VGOOD","2017","$63.2M"],[40.81414574,-73.93311254,"f","MADISON AVE BRIDGE","B","FAIR","2018","$360.0M"],[40.81409934,-73.93464096,"g","RAMP TO MADISON AVENUE","M","GOOD","2018","$90.0M"],[40.81947886,-73.93306695,"e","145TH ST BRIDGE","B","VGOOD","2017","$255.2M"],[40.86271445,-73.91475532,"g","W 207TH/W FORDHAM RD","B","GOOD","2018","$143.0M"],[40.87396908,-73.91064853,"f","BROADWAY BRIDGE","B","FAIR","2017","$211.2M"],[40.87346508,-73.91128473,"g","NYCTA IRT","B","GOOD","2017","$87.8M"],[40.82825322,-73.88382693,"g","WESTCHESTER AVE","B","GOOD","2017","$24.7M"],[40.86200075,-73.81584704,"f","SHORE ROAD","B","FAIR","2018","$197.3M"],[40.8562362,-73.79321653,"e","CITY ISLAND ROAD","B","VGOOD","2017","$181.3M"],[40.67176285,-73.99838711,"f","HAMILTON AVE BRIDGE","B","FAIR","2018","$32.9M"],[40.67145787,-73.99854734,"g","HAMILTON AVE BRIDGE","B","GOOD","2017","$38.7M"],[40.67409137,-73.99646494,"g","NINTH ST BRIDGE","B","GOOD","2017","$26.2M"],[40.67610041,-73.99014845,"g","THIRD ST","B","GOOD","2017","$22.9M"],[40.67817514,-73.98919753,"f","CARROLL ST","B","FAIR","2017","$13.6M"],[40.67947668,-73.98834379,"f","UNION ST","B","FAIR","2018","$22.1M"],[40.71429407,-73.93120898,"g","METROPOLITAN AVE","B","GOOD","2017","$47.5M"],[40.58139084,-73.98598633,"f","CROPSEY AVE SB","B","FAIR","2017","$42.3M"],[40.58148618,-73.98571396,"f","CROPSEY AVE NB","B","FAIR","2017","$42.3M"],[40.67412392,-73.98882257,"e","THIRD AVE","B","VGOOD","2017","$16.9M"],[40.58276168,-73.94825833,"f","OCEAN AVE PED BRDG","B","FAIR","2018","$20.0M"],[40.56653061,-74.1696779,"g","RICHMOND AVE","S","GOOD","2017","$146.7M"],[40.73328777,-73.94038388,"g","GREENPOINT AVE BRIDGE","B","GOOD","2017","$338.9M"],[40.71651019,-73.92271679,"f","GRAND ST BRIDGE","B","FAIR","2017","$23.3M"],[40.73907188,-73.94282182,"f","BORDEN AVE","Q","FAIR","2017","$37.8M"],[40.76339902,-73.75184174,"f","NORTHERN BLVD","Q","FAIR","2018","$37.1M"],[40.7408413,-73.94058958,"g","HUNTERS PT AVE","Q","GOOD","2018","$54.7M"],[40.75703339,-73.83864185,"f","ROOSEVELT AVE","Q","FAIR","2017","$287.3M"],[40.5827137,-73.98255911,"e","STILLWELL AVE","B","VGOOD","2017","$76.5M"],[40.78607922,-73.93702385,"f","WARDS ISLAND PED BRDG","M","FAIR","2018","$87.8M"],[40.73919279,-73.95258891,"f","PULASKI BRIDGE","B","FAIR","2018","$929.8M"],[40.76341403,-73.94563293,"g","ROOSEVELT ISLAND BRDG","M","GOOD","2017","$178.9M"],[40.65341494,-73.83171934,"f","163RD AVE PED BRDG","Q","FAIR","2018","$22.5M"],[40.78229699,-73.8881267,"f","RIKERS ISLAND BRIDGE","Q","FAIR","2017","$825.4M"],[40.81608687,-73.91287775,"e","WESTCHESTER AVE","B","VGOOD","2018","$13.5M"],[40.81967093,-73.91183314,"f","E 156TH STREET","B","FAIR","2018","$10.7M"],[40.82336301,-73.91112466,"e","E 161ST STREET","B","VGOOD","2018","$57.6M"],[40.82502756,-73.91186685,"e","E 163RD STREET","B","VGOOD","2018","$14.4M"],[40.82221647,-73.91102056,"g","THIRD AVE","B","GOOD","2018","$12.2M"],[40.81411877,-73.91251014,"f","E 149TH ST/JACKSON AVE","B","FAIR","2018","$30.4M"],[40.80859809,-73.90982162,"e","ST. MARYS & CONCORD","B","VGOOD","2018","$11.7M"],[40.80801841,-73.90897623,"e","WALES AVE","B","VGOOD","2018","$11.4M"],[40.80739745,-73.90812033,"g","SOUTHERN BLVD","B","GOOD","2018","$17.6M"],[40.8067293,-73.90728796,"e","BRUCKNER BLVD","B","VGOOD","2018","$30.1M"],[40.82592792,-73.91292497,"g","MELROSE AVE","B","GOOD","2017","$170.3M"],[40.80871729,-73.90301426,"g","E 149TH ST","B","GOOD","2018","$82.2M"],[40.81253625,-73.89700879,"g","LEGGETT AVE","B","GOOD","2018","$187.0M"],[40.81539937,-73.89471835,"g","LONGWOOD AVE","B","GOOD","2018","$47.8M"],[40.81618274,-73.89393234,"g","LAFAYETTE AVE","B","GOOD","2018","$54.5M"],[40.81746383,-73.89266523,"e","TIFFANY ST","B","VGOOD","2017","$32.7M"],[40.81848961,-73.89158933,"g","BARRETTO ST","B","GOOD","2018","$23.9M"],[40.81972434,-73.89008582,"g","HUNTS POINT AVE","B","GOOD","2018","$45.2M"],[40.82086007,-73.88852009,"e","FAILE ST","B","VGOOD","2018","$27.9M"],[40.8214802,-73.88776644,"e","BRYANT AVE","B","VGOOD","2018","$18.3M"],[40.82817581,-73.88507134,"g","WESTCHESTER AVE","B","GOOD","2018","$70.2M"],[40.87033951,-73.87620432,"f","204TH ST PED BRDG","B","FAIR","2018","$21.1M"],[40.83762046,-73.8753791,"g","E 177TH ST","B","GOOD","2018","$74.7M"],[40.83959395,-73.87018655,"f","E TREMONT AVE","B","FAIR","2018","$100.3M"],[40.84170459,-73.86475569,"f","WHITE PLAINS ROAD","B","FAIR","2018","$46.1M"],[40.84182,-73.8642461,"g","UNIONPORT ROAD","B","GOOD","2018","$34.7M"],[40.84562651,-73.84742367,"g","WILLIAMSBRIDGE RD","B","GOOD","2018","$29.3M"],[40.88558041,-73.80306841,"f","PELHAM BAY PK EQUES","B","FAIR","2018","$32.9M"],[40.87003605,-73.81276551,"e","SHORE RD CIRCLE","B","VGOOD","2018","$36.5M"],[40.82047196,-73.92638251,"f","GRAND CONCOURSE","B","FAIR","2018","$64.3M"],[40.82166378,-73.92725181,"f","WALTON AVE","B","FAIR","2018","$16.2M"],[40.82252988,-73.92781343,"e","GERARD AVE","B","VGOOD","2018","$23.0M"],[40.82336019,-73.92852891,"g","RIVER AVE","B","GOOD","2017","$23.3M"],[40.85362638,-73.92020404,"f","W TREMONT AVE","B","FAIR","2018","$58.0M"],[40.86208475,-73.91325606,"g","W FORDHAM RD","B","GOOD","2017","$72.2M"],[40.87334512,-73.90651538,"e","W 225TH ST","B","VGOOD","2018","$49.0M"],[40.87665308,-73.90495972,"e","W 230TH ST","B","VGOOD","2017","$26.6M"],[40.87860069,-73.90393672,"g","W 231ST ST","B","GOOD","2018","$21.3M"],[40.88025938,-73.902576,"g","W 233RD ST","B","GOOD","2017","$16.9M"],[40.8811316,-73.9018035,"g","W 234TH ST","B","GOOD","2017","$17.0M"],[40.816173,-73.92685701,"g","E 144TH ST","B","GOOD","2017","$37.9M"],[40.81811262,-73.92541391,"g","E 149TH ST","B","GOOD","2018","$134.1M"],[40.82258594,-73.92021813,"f","CONCOURSE VILLAGE E","B","FAIR","2018","$54.3M"],[40.82353304,-73.91858717,"g","E 158TH ST","B","GOOD","2017","$15.3M"],[40.82493854,-73.91641323,"f","E 161ST ST","B","FAIR","2017","$29.9M"],[40.82561697,-73.91525234,"f","E 162ND ST","B","FAIR","2018","$21.0M"],[40.82784091,-73.91204193,"f","E 165TH ST","B","FAIR","2018","$74.0M"],[40.83034153,-73.90930908,"e","E 167TH ST","B","VGOOD","2018","$16.0M"],[40.83191105,-73.90836157,"g","E 168TH ST","B","GOOD","2018","$26.5M"],[40.83346759,-73.90743015,"f","E 169TH ST","B","FAIR","2018","$13.9M"],[40.83584242,-73.90609658,"e","E 170TH ST","B","VGOOD","2018","$14.6M"],[40.83651118,-73.90569612,"f","ST PAULS PL PED BRDG","B","FAIR","2018","$4.0M"],[40.83936792,-73.90409574,"e","CLAREMONT PKWY","B","VGOOD","2018","$27.0M"],[40.84259663,-73.9022,"f","E 173RD ST","B","FAIR","2018","$13.5M"],[40.84518695,-73.90068073,"f","E 175TH ST","B","FAIR","2018","$16.1M"],[40.84736578,-73.89949738,"g","E TREMONT AVE","B","GOOD","2017","$38.4M"],[40.84872971,-73.89863455,"f","E 178TH ST PED BRDG","B","FAIR","2018","$3.3M"],[40.85011612,-73.89788294,"g","E 179TH ST PED BRDG","B","GOOD","2018","$4.5M"],[40.85184697,-73.89687043,"f","E 180TH ST","B","FAIR","2018","$22.3M"],[40.85579804,-73.89456458,"f","E 183TH ST","B","FAIR","2018","$18.4M"],[40.85933174,-73.89200743,"f","E 188TH ST","B","FAIR","2018","$23.9M"],[40.8583138,-73.89283332,"g","E 187TH ST","B","GOOD","2018","$17.0M"],[40.86008008,-73.89143128,"g","FORDHAM RD - E 189TH ST","B","GOOD","2017","$179.9M"],[40.86657722,-73.88299003,"f","BEDFORD PARK BLVD","B","FAIR","2018","$29.2M"],[40.87848433,-73.87080711,"e","GUN HILL RD","B","VGOOD","2018","$41.0M"],[40.89509112,-73.86280875,"g","E 233RD ST","B","GOOD","2018","$34.5M"],[40.90579692,-73.85565989,"f","E 241ST ST","B","FAIR","2017","$222.8M"],[40.87246451,-73.84395267,"f","EASTCHESTER ROAD","B","FAIR","2018","$60.8M"],[40.87022769,-73.84578148,"e","GUN HILL ROAD","B","VGOOD","2018","$33.8M"],[40.8737907,-73.89015793,"f","BEDFORD PARK BLVD","B","FAIR","2018","$177.9M"],[40.87667792,-73.88898888,"e","W 205TH ST","B","VGOOD","2018","$146.3M"],[40.85795455,-73.83072455,"g","HUTCHINSON RVR PKWY","B","GOOD","2018","$69.5M"],[40.85545057,-73.87679613,"g","EAST FORDHAM RD","B","GOOD","2018","$43.0M"],[40.85678108,-73.88068555,"g","SOUTHERN BLVD","B","GOOD","2018","$60.3M"],[40.85738215,-73.88189839,"g","CROTONA AVE","B","GOOD","2018","$35.9M"],[40.87874732,-73.86917258,"f","BRONX BLVD S.B.","B","FAIR","2018","$8.0M"],[40.87846213,-73.86901222,"f","BRONX BLVD N.B.","B","FAIR","2018","$8.1M"],[40.87645648,-73.87028648,"f","BRONX BLVD S.B.","B","FAIR","2018","$12.6M"],[40.8762386,-73.87007828,"f","BRONX BLVD N.B.","B","FAIR","2018","$12.6M"],[40.87059669,-73.87305641,"f","PARK ROAD (204TH ST)","B","FAIR","2018","$21.1M"],[40.86853523,-73.87741042,"e","BOTANICAL GARDEN ROAD","B","VGOOD","2018","$9.3M"],[40.85282998,-73.87411929,"g","BOSTON ROAD","B","GOOD","2018","$23.7M"],[40.86112802,-73.87531343,"f","FTBG N OF RTE 1 (HESTER BRDG)","B","FAIR","2018","$8.6M"],[40.84002474,-73.87840801,"f","E TREMONT AVE","B","FAIR","2018","$58.0M"],[40.86619084,-73.87510451,"f","MAGNOLIA WAY","B","FAIR","2018","$27.9M"],[40.85902732,-73.87642046,"g","SNUFF MILL ROAD","B","GOOD","2018","$21.6M"],[40.82679214,-73.92267899,"e","GRAND CONCOURSE","B","VGOOD","2018","$122.8M"],[40.82216615,-73.908432,"f","EAGLE AVE","B","FAIR","2018","$12.6M"],[40.83450944,-73.91770667,"g","GRAND CONCOURSE","B","GOOD","2018","$154.3M"],[40.81326801,-73.93016629,"g","GRAND CONCOURSE","B","GOOD","2017","$42.8M"],[40.83871568,-73.91370727,"f","GRAND CONCOURSE","B","FAIR","2018","$161.6M"],[40.84474474,-73.91132032,"f","GRAND CONCOURSE","B","FAIR","2018","$68.0M"],[40.84646514,-73.90936012,"f","GRAND CONCOURSE","B","FAIR","2018","$54.3M"],[40.84940621,-73.90597958,"e","GRAND CONCOURSE","B","VGOOD","2017","$52.6M"],[40.86603097,-73.89436317,"f","GRAND CONCOURSE","B","FAIR","2018","$83.8M"],[40.86243563,-73.8971836,"e","EAST FORDHAM RD","B","VGOOD","2018","$46.4M"],[40.85242866,-73.9035673,"g","GRAND CONCOURSE","B","GOOD","2018","$39.3M"],[40.87210389,-73.8877427,"f","GRAND CONCOURSE","B","FAIR","2018","$42.5M"],[40.87466809,-73.88645801,"e","GRAND CONCOURSE","B","VGOOD","2017","$41.7M"],[40.84230686,-73.87704626,"f","E 180TH ST","B","FAIR","2018","$20.5M"],[40.8781311,-73.86945771,"g","GUN HILL ROAD","B","GOOD","2018","$42.3M"],[40.87789259,-73.86842184,"e","GUN HILL ROAD","B","VGOOD","2018","$39.1M"],[40.89496159,-73.86230287,"f","E 233RD ST","B","FAIR","2018","$32.0M"],[40.89551929,-73.86321648,"g","E 233RD ST","B","GOOD","2018","$23.9M"],[40.66067339,-73.96212794,"f","LINCOLN ROAD","B","FAIR","2018","$28.1M"],[40.65502554,-73.96156622,"f","PARKSIDE AVE - OCEAN AVE","B","FAIR","2018","$219.2M"],[40.65291619,-73.96219553,"f","CROOKE AVE","B","FAIR","2018","$27.0M"],[40.65167742,-73.9625695,"f","CATON AVE","B","FAIR","2017","$93.6M"],[40.64924418,-73.96334847,"f","E 18TH ST - CHURCH AVE","B","FAIR","2017","$81.9M"],[40.64434414,-73.96445375,"f","BEVERLY ROAD","B","FAIR","2018","$19.6M"],[40.64132138,-73.96396698,"e","CORTELYOU ROAD","B","VGOOD","2017","$21.6M"],[40.63938989,-73.96355929,"e","DORCHESTER ROAD","B","VGOOD","2018","$22.6M"],[40.63728778,-73.96321339,"e","DITMAS AVE","B","VGOOD","2017","$23.2M"],[40.63571743,-73.96289475,"g","NEWKIRK AVE","B","GOOD","2018","$18.4M"],[40.63419232,-73.96259908,"f","FOSTER AVE","B","FAIR","2018","$13.5M"],[40.67349461,-73.95804142,"e","STERLING PLACE","B","VGOOD","2017","$10.3M"],[40.67257666,-73.95842523,"e","ST JOHNS PLACE","B","VGOOD","2017","$10.3M"],[40.67176003,-73.95870178,"e","LINCOLN PLACE","B","VGOOD","2018","$11.1M"],[40.67005528,-73.95942125,"f","UNION ST","B","FAIR","2018","$18.4M"],[40.66912047,-73.95961536,"f","PRESIDENT ST","B","FAIR","2018","$11.2M"],[40.66824397,-73.9600323,"g","CARROLL ST PED BRDG","B","GOOD","2018","$2.7M"],[40.6673696,-73.96027654,"e","CROWN ST","B","VGOOD","2017","$18.3M"],[40.66644923,-73.9606267,"e","MONTGOMERY ST","B","VGOOD","2017","$10.1M"],[40.66485391,-73.96124208,"e","WASHINGTON AVE","B","VGOOD","2018","$26.8M"],[40.66279547,-73.96217007,"e","FLATBUSH AVE","B","VGOOD","2018","$50.9M"],[40.67087029,-73.95897533,"g","EASTERN PKWY","B","GOOD","2018","$34.6M"],[40.68247204,-73.97388986,"f","6TH AVE","B","FAIR","2018","$55.2M"],[40.68232726,-73.97071616,"e","CARLTON AVE","B","VGOOD","2017","$69.3M"],[40.64029905,-74.02602928,"f","2ND AVE","B","FAIR","2018","$80.2M"],[40.6389278,-74.02393913,"g","3RD AVE","B","GOOD","2017","$77.6M"],[40.63765396,-74.02173903,"f","4TH AVE","B","FAIR","2017","$62.3M"],[40.62558956,-73.99467103,"f","15TH AVE","B","FAIR","2018","$16.3M"],[40.62533556,-73.99275881,"e","60TH ST","B","VGOOD","2017","$17.9M"],[40.6253984,-73.99129668,"f","16TH AVE","B","FAIR","2018","$24.3M"],[40.62581549,-73.98692936,"f","17TH AVE","B","FAIR","2018","$15.3M"],[40.62620897,-73.98306199,"f","18TH AVE","B","FAIR","2018","$27.0M"],[40.62631956,-73.98221851,"g","52ND ST","B","GOOD","2018","$14.8M"],[40.62666629,-73.97981241,"f","50TH ST","B","FAIR","2017","$30.5M"],[40.62726063,-73.97646605,"f","MCDONALD AVE","B","FAIR","2018","$13.4M"],[40.6276054,-73.97441487,"e","E 3RD ST","B","VGOOD","2017","$8.3M"],[40.62814009,-73.97118816,"g","OCEAN PKWY","B","GOOD","2018","$31.5M"],[40.62867739,-73.96589067,"f","CONEY ISLAND AVE","B","FAIR","2018","$14.5M"],[40.62892453,-73.96303028,"f","E 14TH ST","B","FAIR","2018","$8.0M"],[40.62900379,-73.96208283,"g","E 15TH ST PED BRDG","B","GOOD","2018","$4.0M"],[40.62955827,-73.95709385,"g","OCEAN AVE","B","GOOD","2018","$23.4M"],[40.63002494,-73.95228173,"f","BEDFORD AVE","B","FAIR","2018","$69.5M"],[40.63056248,-73.94743172,"f","NOSTRAND AVE","B","FAIR","2018","$19.4M"],[40.63077198,-73.94548075,"f","FLATBUSH AVE","B","FAIR","2018","$26.5M"],[40.63120822,-73.94160728,"g","BROOKLYN AVE","B","GOOD","2017","$20.6M"],[40.63224652,-73.93761131,"e","ALBANY AVE - AVE H","B","VGOOD","2017","$157.9M"],[40.67587088,-73.90396627,"f","ATLANTIC AVE","B","FAIR","2018","$608.0M"],[40.59248505,-73.97822476,"g","86TH ST","B","GOOD","2018","$54.8M"],[40.63691074,-74.01886659,"f","5TH AVE","B","FAIR","2018","$56.1M"],[40.63615853,-74.01602676,"e","6TH AVE","B","VGOOD","2017","$64.7M"],[40.63540666,-74.01319312,"f","7TH AVE","B","FAIR","2018","$84.1M"],[40.63446453,-74.01052268,"e","8TH AVE","B","VGOOD","2017","$48.8M"],[40.6323204,-74.00674254,"e","FORT HAMILTON PKWY","B","VGOOD","2018","$56.9M"],[40.6306179,-74.00385988,"e","11TH AVE","B","VGOOD","2018","$43.2M"],[40.6279371,-73.99943486,"g","13TH AVE","B","GOOD","2017","$72.0M"],[40.62653622,-73.99739663,"g","14TH AVE","B","GOOD","2018","$21.6M"],[40.62596366,-73.99695834,"g","NEW UTRECHT AVE","B","GOOD","2018","$10.9M"],[40.6243354,-73.99596006,"e","15TH AVE","B","VGOOD","2017","$48.9M"],[40.62278515,-73.99393702,"f","16TH AVE","B","FAIR","2018","$30.7M"],[40.62137924,-73.99153902,"e","17TH AVE","B","VGOOD","2018","$40.3M"],[40.61999856,-73.98920711,"e","18TH AVE","B","VGOOD","2017","$23.4M"],[40.61870498,-73.98715015,"f","19TH AVE","B","FAIR","2018","$21.6M"],[40.61739391,-73.9849668,"e","20TH AVE","B","VGOOD","2018","$31.5M"],[40.61452817,-73.98256593,"f","65TH ST","B","FAIR","2018","$54.0M"],[40.61309612,-73.98213716,"f","BAY PKWY","B","FAIR","2018","$75.6M"],[40.61045466,-73.98157739,"e","AVENUE O","B","VGOOD","2017","$21.0M"],[40.60791798,-73.98119103,"e","AVENUE P","B","VGOOD","2017","$24.9M"],[40.60517765,-73.98065649,"e","KINGS HIGHWAY","B","VGOOD","2017","$22.6M"],[40.60331512,-73.98028319,"e","HIGHLAWN AVE","B","VGOOD","2017","$31.3M"],[40.60100174,-73.97980869,"e","AVENUE S","B","VGOOD","2017","$24.1M"],[40.5985553,-73.97931455,"e","AVENUE T","B","VGOOD","2017","$24.1M"],[40.59637345,-73.97895836,"g","AVENUE U","B","GOOD","2018","$26.3M"],[40.61576525,-73.98313544,"f","21ST AVE","B","FAIR","2018","$96.1M"],[40.65314065,-74.00562358,"e","4TH AVE","B","VGOOD","2017","$20.0M"],[40.64649166,-73.99456165,"e","9TH AVE","B","VGOOD","2017","$55.8M"],[40.67343722,-73.90311564,"g","LIBERTY AVE","B","GOOD","2018","$30.2M"],[40.6721203,-73.90284389,"g","GLENMORE AVE","B","GOOD","2018","$25.5M"],[40.67091376,-73.90246809,"g","PITKIN AVE","B","GOOD","2018","$24.6M"],[40.66840812,-73.90184725,"g","SUTTER AVE","B","GOOD","2018","$25.2M"],[40.66686352,-73.90141119,"f","BLAKE AVE","B","FAIR","2018","$22.1M"],[40.66383796,-73.90057479,"f","LIVONIA AVE PED BRDG","B","FAIR","2018","$11.2M"],[40.649172,-73.99894475,"e","7TH AVE","B","VGOOD","2018","$13.9M"],[40.64631389,-73.99470999,"g","9TH AVE","B","GOOD","2017","$29.2M"],[40.66886677,-73.96916435,"f","EAST DR (ENDALE ARCH)","B","FAIR","2018","$6.9M"],[40.67123304,-73.97008756,"e","WEST DR (MEADOWPORT ARCH)","B","VGOOD","2017","$11.2M"],[40.66606292,-73.96712804,"e","EAST DRIVE","B","VGOOD","2017","$9.0M"],[40.66053539,-73.96430054,"f","EAST DR (EAST WOOD ARCH)","B","FAIR","2018","$4.8M"],[40.66230637,-73.96881821,"g","CENTER DR (NETHERMEAD ARCHES)","B","GOOD","2017","$31.6M"],[40.6584488,-73.96516572,"f","HILL DR (CLEFT RIDGE SPAN)","B","FAIR","2018","$3.4M"],[40.6617582,-73.96621132,"g","WEST FT BRDG (MUSIC GROVE  BRD","B","GOOD","2018","$1.4M"],[40.65642761,-73.96833857,"f","HILL DR (TERRACE BRDG)","B","FAIR","2018","$34.8M"],[40.66060598,-73.9662234,"f","PED NR BOATHSE (LULLWATER BRDG","B","FAIR","2018","$4.5M"],[40.63979593,-74.02659814,"e","RIDGE BLVD","B","VGOOD","2017","$19.9M"],[40.63833658,-74.02448613,"e","3RD AVE","B","VGOOD","2017","$19.6M"],[40.6755791,-73.90251113,"e","ATLNTC AV SVC RD E.B.","B","VGOOD","2017","$14.4M"],[40.67588883,-73.9024683,"e","ATLNTC AV SVC RD W.B.","B","VGOOD","2017","$25.2M"],[40.69447458,-73.98001353,"f","FLEET WALK PED BRDG","B","FAIR","2018","$2.8M"],[40.68031191,-73.87491914,"g","CONDUIT BLVD NB","B","GOOD","2018","$17.4M"],[40.65455217,-73.97642325,"f","SEELEY ST","B","FAIR","2018","$38.2M"],[40.65174095,-74.00338647,"f","5TH AVE","B","FAIR","2017","$16.2M"],[40.75483426,-74.0026801,"f","11TH AVE VIADUCT","M","FAIR","2018","$639.0M"],[40.75590969,-74.00535963,"f","W 33RD ST","M","FAIR","2018","$74.2M"],[40.75583834,-74.00477276,"f","W 33RD ST","M","FAIR","2015","$10.6M"],[40.7569199,-74.00457018,"f","W 34TH ST","M","FAIR","2017","$53.1M"],[40.75644745,-74.00149588,"f","W 35TH ST","M","FAIR","2018","$29.2M"],[40.75668461,-74.00016403,"g","W 36TH ST","M","GOOD","2017","$24.6M"],[40.86085661,-73.93248182,"g","MARGARET CORBIN DR","M","GOOD","2018","$2.7M"],[40.86259913,-73.93295648,"f","MARGARET CORBIN DR","M","FAIR","2018","$4.0M"],[40.75711766,-73.9992521,"e","W 37TH ST","M","VGOOD","2017","$32.0M"],[40.75761307,-73.99854688,"f","W 38TH ST","M","FAIR","2018","$27.9M"],[40.75815994,-73.99795902,"f","W 39TH ST","M","FAIR","2018","$28.4M"],[40.76056091,-73.9956179,"g","W 43RD ST","M","GOOD","2018","$18.6M"],[40.76116926,-73.9951536,"f","W 44TH ST","M","FAIR","2018","$18.4M"],[40.76178985,-73.99467474,"g","W 45TH ST","M","GOOD","2018","$18.4M"],[40.76244305,-73.99430047,"f","W 46TH ST","M","FAIR","2018","$18.6M"],[40.76305196,-73.99378616,"f","W 47TH ST","M","FAIR","2018","$18.4M"],[40.76374448,-73.99347571,"f","W 48TH ST","M","FAIR","2018","$18.4M"],[40.76432635,-73.99291788,"f","W 49TH ST","M","FAIR","2018","$18.4M"],[40.76556754,-73.99194011,"f","W 51ST ST","M","FAIR","2018","$19.4M"],[40.76626917,-73.99170401,"f","W 52ND ST","M","FAIR","2018","$19.4M"],[40.76690926,-73.99127551,"f","W 53RD ST","M","FAIR","2018","$22.9M"],[40.77086158,-73.99063642,"f","W 58TH ST","M","FAIR","2018","$17.3M"],[40.77125011,-73.99067493,"f","11TH AVE","M","FAIR","2018","$69.3M"],[40.75991992,-73.99615611,"f","W 42ND ST","M","FAIR","2018","$46.4M"],[40.77005181,-73.99081754,"f","W 57TH ST","M","FAIR","2018","$41.0M"],[40.82922052,-73.95109656,"f","W 148TH ST PED BRDG","M","FAIR","2018","$5.0M"],[40.83646411,-73.94866863,"e","W 158TH ST","M","VGOOD","2017","$91.0M"],[40.84744136,-73.94603808,"f","W 173RD ST PED BRDG","M","FAIR","2018","$6.8M"],[40.83416267,-73.94955221,"f","W 155TH ST PED BRDG","M","FAIR","2018","$3.6M"],[40.86898796,-73.93144803,"f","INWOOD HILL PK FTBR","M","FAIR","2018","$3.1M"],[40.7872692,-73.95205545,"e","E 97TH ST","M","VGOOD","2018","$14.4M"],[40.75927793,-73.99671391,"f","W 41ST ST","M","FAIR","2018","$28.1M"],[40.76496154,-73.99245458,"f","W 50TH ST","M","FAIR","2018","$18.4M"],[40.767649,-73.99106307,"f","W 54TH ST","M","FAIR","2018","$21.1M"],[40.76839902,-73.99091787,"f","W 55TH ST","M","FAIR","2018","$19.4M"],[40.76918802,-73.99085415,"f","W 56TH ST","M","FAIR","2018","$19.8M"],[40.76866976,-73.9698149,"e","TRANSVERSE RD #1 WB","M","VGOOD","2018","$6.8M"],[40.76954544,-73.9790241,"g","W 65TH ST ENTR EB","M","GOOD","2018","$6.3M"],[40.75871074,-73.99735705,"f","W 40TH ST","M","FAIR","2018","$42.3M"],[40.75427007,-73.97676337,"g","PARK AVE S.B.","M","GOOD","2018","$10.7M"],[40.75381294,-73.97574766,"g","PARK AVE N.B","M","GOOD","2018","$11.1M"],[40.84508238,-73.94377728,"g","TO GWB OPP W 171ST ST","M","GOOD","2018","$49.0M"],[40.76926592,-73.97995525,"g","WEST DR (GREYSHOT ARCH)","M","GOOD","2018","$11.5M"],[40.76931019,-73.9788419,"f","W 62 ST PED BRDG (PINEBANK ARC","M","FAIR","2018","$4.5M"],[40.76697633,-73.97378022,"f","E 62 ST PED BRDG (GAPSTOW BRDG","M","FAIR","2018","$6.3M"],[40.76663485,-73.97284406,"f","EAST DR (INSCOPE ARCH)","M","FAIR","2018","$6.8M"],[40.76849245,-73.97568911,"g","CENTER DR (DRIPROCK ARCH)","M","GOOD","2018","$8.1M"],[40.76790334,-73.97315802,"f","EAST DR (GREEN GAP ARCH)","M","FAIR","2018","$9.7M"],[40.76956342,-73.97480629,"f","CENTER DR (PLAYMATES ARCH)","M","FAIR","2018","$5.1M"],[40.77028191,-73.97907554,"e","WEST DR (DALEHEAD ARCH)","M","VGOOD","2018","$9.2M"],[40.76941702,-73.97394304,"f","PED BRDG OPP 65 ST","M","FAIR","2018","$10.3M"],[40.76977169,-73.97451875,"f","CENTER DRIVE","M","FAIR","2018","$27.5M"],[40.76901779,-73.97284431,"f","EAST DRIVE","M","FAIR","2018","$24.0M"],[40.77154697,-73.97739125,"p","WEST DRIVE","M","POOR","2018","$31.5M"],[40.77012593,-73.97128899,"f","EAST DR (WILLOWDELL ARCH)","M","FAIR","2018","$3.0M"],[40.77602882,-73.97548534,"g","W 72 ST ENTR (RIFTSTONE ARCH)","M","GOOD","2018","$16.6M"],[40.77369904,-73.97107426,"g","72 ST CROSS DR (TERRACE BRDG)","M","GOOD","2018","$22.8M"],[40.7757671,-73.97177351,"f","73 ST PED BRDG (BOW BRIDGE)","M","FAIR","2018","$7.7M"],[40.77448765,-73.96888794,"g","EAST DR (TREFOIL ARCH)","M","GOOD","2018","$8.6M"],[40.77819729,-73.96651957,"g","EAST DRIVE","M","GOOD","2018","$23.4M"],[40.77993592,-73.97103025,"g","WEST DRIVE","M","GOOD","2018","$28.8M"],[40.78155254,-73.96277697,"f","EAST DRIVE","M","FAIR","2018","$20.8M"],[40.78442678,-73.96724257,"g","WEST DRIVE","M","GOOD","2018","$20.7M"],[40.78944906,-73.95739341,"f","EAST DRIVE","M","FAIR","2018","$24.9M"],[40.791647,-73.96255726,"f","WEST DRIVE","M","FAIR","2018","$17.6M"],[40.77900615,-73.97133958,"g","W77 ST PED (OAK BRDG)","M","GOOD","2018","$5.0M"],[40.7786242,-73.97240103,"g","WEST DR (BALCONY BRDG)","M","GOOD","2018","$8.5M"],[40.77949633,-73.97294669,"f","W77 ST PED (LADIES POND BRDG)","M","FAIR","2018","$2.2M"],[40.77906563,-73.96554618,"f","EAST DR (GREYWACKE ARCH)","M","FAIR","2018","$5.7M"],[40.78180141,-73.96942714,"g","WEST DR (WINTERDALE ARCH)","M","GOOD","2018","$11.8M"],[40.78496511,-73.96678106,"g","E86 ST PED (SE RESERVOIR BRDG)","M","GOOD","2018","$3.1M"],[40.78176276,-73.96243558,"f","W86 ST PED (SW RESERVOIR BRDG)","M","FAIR","2018","$5.0M"],[40.77786508,-73.9650631,"f","PED PATH OPP E79 ST","M","FAIR","2018","$16.6M"],[40.7683457,-73.9710571,"g","TRNSVRS RD 1 EB (DENESMOUTH AR","M","GOOD","2018","$8.0M"],[40.80001336,-73.95786814,"f","W110 ST ENTR (MOUNTCLIFF ARCH)","M","FAIR","2018","$6.1M"],[40.7792288,-73.96927223,"f","79 TH ST PED BRDG","M","FAIR","2018","$26.6M"],[40.77533899,-73.96628787,"f","E77 ST PED (GLADE ARCH)","M","FAIR","2018","$22.5M"],[40.77922514,-73.97327235,"g","W77 ST ENTR (EAGLEVALE ARCH)","M","GOOD","2018","$13.8M"],[40.79583993,-73.95566863,"f","EAST DR (HUDDLESTONE ARCH)","M","FAIR","2018","$5.5M"],[40.85139752,-73.94128345,"e","W 181 ST","M","VGOOD","2018","$36.9M"],[40.82733405,-73.93522074,"f","A.C. POWELL BLVD N.B.","M","FAIR","2018","$13.5M"],[40.86294929,-73.93278883,"f","FORT TRYON PLACE","M","FAIR","2018","$15.1M"],[40.86375178,-73.93165513,"f","CORBIN PL OVERPASS","M","FAIR","2018","$10.2M"],[40.7521796,-73.97763202,"f","PARK AVE VIADUCT","M","FAIR","2017","$127.3M"],[40.74907275,-73.97047858,"e","TUDOR CITY PLACE","M","VGOOD","2018","$29.8M"],[40.84199214,-73.92803866,"f","HIGH BRIDGE PDOVP","B","FAIR","2002","$153.4M"],[40.84776071,-73.9425401,"f","W 176TH ST PED BRDG","M","FAIR","2018","$5.4M"],[40.80564956,-73.93403856,"f","E 128TH ST PED BRDG","M","FAIR","2018","$10.3M"],[40.81818022,-73.96015419,"f","RIVERSIDE DRIVE","M","FAIR","2017","$667.4M"],[40.82058794,-73.9584286,"e","W 134 ST","M","VGOOD","2017","$33.8M"],[40.87378777,-73.91973138,"e","ISHAM PK VEHICULAR","M","VGOOD","2018","$4.1M"],[40.87359021,-73.91976945,"f","ISHAM PK PED BRDG","M","FAIR","2018","$1.4M"],[40.82670631,-73.935383,"f","W 153 ST","M","FAIR","2018","$13.9M"],[40.8364177,-73.94851309,"f","RIVERSIDE DRIVE","M","FAIR","2017","$835.5M"],[40.79601545,-73.97502824,"e","RIVERSIDE DRIVE","M","VGOOD","2017","$47.7M"],[40.82284737,-73.95569164,"g","RIVERSIDE DRIVE","M","GOOD","2018","$30.5M"],[40.80744168,-73.93514632,"f","E 129TH ST PED BRDG","M","FAIR","2018","$4.7M"],[40.74398646,-73.87068441,"f","94TH ST PED BRDG","Q","FAIR","2018","$4.1M"],[40.75979347,-73.82615715,"g","UNION ST","Q","GOOD","2017","$14.3M"],[40.76038344,-73.82411121,"f","BOWNE ST","Q","FAIR","2018","$22.4M"],[40.76102242,-73.8217802,"f","PARSONS BLVD","Q","FAIR","2018","$18.1M"],[40.76197355,-73.81826404,"e","147TH ST","Q","VGOOD","2017","$9.0M"],[40.76254833,-73.81611636,"e","149TH ST","Q","VGOOD","2018","$21.2M"],[40.76267103,-73.81490573,"g","149TH PLACE","Q","GOOD","2017","$19.4M"],[40.76267907,-73.81393408,"g","150TH ST","Q","GOOD","2017","$33.0M"],[40.76262725,-73.81252339,"e","MURRAY ST","Q","VGOOD","2017","$18.0M"],[40.74416967,-73.90107489,"f","WOODSIDE AVE","Q","FAIR","2018","$70.9M"],[40.76270949,-73.77550849,"g","CORPORAL KENNEDY ST","Q","GOOD","2017","$11.9M"],[40.76315214,-73.77078346,"g","BELL BLVD","Q","GOOD","2017","$19.4M"],[40.74160997,-73.8984364,"e","65TH ST","Q","VGOOD","2017","$29.7M"],[40.74241127,-73.89929321,"e","65TH PLACE","Q","VGOOD","2017","$37.7M"],[40.76900448,-73.74834297,"f","DOUGLASTON PKWY","Q","FAIR","2018","$28.6M"],[40.73388318,-73.88352253,"f","GRAND AVE","Q","FAIR","2018","$33.4M"],[40.7325567,-73.88019488,"f","55TH AVE PED BRDG","Q","FAIR","2018","$5.8M"],[40.71175001,-73.83326673,"g","80TH ROAD","Q","GOOD","2017","$18.4M"],[40.71073766,-73.83194301,"g","82ND AVE","Q","GOOD","2017","$18.4M"],[40.70903898,-73.83014022,"g","LEFFERTS BLVD","Q","GOOD","2017","$24.6M"],[40.74093653,-73.95541904,"g","JACKSON AVE","Q","GOOD","2018","$20.3M"],[40.74153486,-73.94940655,"g","21ST ST","Q","GOOD","2017","$79.2M"],[40.74215213,-73.94718505,"f","49TH AVE","Q","FAIR","2018","$91.8M"],[40.74555354,-73.93896658,"g","THOMPSON AVE","Q","GOOD","2018","$275.8M"],[40.74678656,-73.93508874,"g","QUEENS BLVD","Q","GOOD","2018","$415.8M"],[40.74809942,-73.92980483,"e","HONEYWELL ST","Q","VGOOD","2017","$445.7M"],[40.74896991,-73.92518051,"e","39TH ST (NORTH)","Q","VGOOD","2017","$216.9M"],[40.74853517,-73.89547368,"g","37TH AVE","Q","GOOD","2017","$30.9M"],[40.74657373,-73.89430137,"g","ROOSEVELT AVE","Q","GOOD","2017","$33.2M"],[40.74497912,-73.89322765,"g","41ST AVE","Q","GOOD","2017","$19.8M"],[40.74291769,-73.89208419,"e","WOODSIDE AVE","Q","VGOOD","2017","$22.4M"],[40.74217469,-73.89163461,"e","43RD AVE","Q","VGOOD","2017","$17.6M"],[40.74138653,-73.89117394,"g","44TH AVE","Q","GOOD","2017","$17.5M"],[40.74067066,-73.89073576,"e","45TH AVE","Q","VGOOD","2017","$10.8M"],[40.73068314,-73.88613268,"g","GRAND AVE","Q","GOOD","2017","$14.8M"],[40.72872839,-73.88554528,"g","57TH AVE","Q","GOOD","2017","$10.3M"],[40.72476062,-73.88478684,"g","CALDWELL AVE","Q","GOOD","2018","$10.0M"],[40.72243557,-73.8846954,"e","ELIOT AVE","Q","VGOOD","2017","$13.3M"],[40.71625416,-73.88694857,"g","JUNIPER BLVD SO","Q","GOOD","2017","$40.5M"],[40.71520702,-73.88739094,"g","69TH STREET","Q","GOOD","2016","$27.8M"],[40.71218906,-73.88891171,"g","METROPOLITAN AVE","Q","GOOD","2017","$83.9M"],[40.71551054,-73.90725858,"e","ANDREWS AVE","Q","VGOOD","2017","$8.0M"],[40.71461478,-73.90576176,"g","60TH ST","Q","GOOD","2017","$24.0M"],[40.71378876,-73.90288021,"g","ELIOT AVE","Q","GOOD","2017","$43.0M"],[40.70673831,-73.86897059,"g","80TH ST","Q","GOOD","2018","$51.9M"],[40.70358159,-73.83975109,"g","FOREST PARK DRIVE","Q","GOOD","2018","$26.9M"],[40.70323115,-73.83871116,"e","PARK LANE SOUTH","Q","VGOOD","2018","$13.6M"],[40.70228605,-73.85249441,"f","MYRTLE AVE","Q","FAIR","2018","$30.3M"],[40.70627646,-73.85623438,"f","PED BRG NEAR UNION TPK","Q","FAIR","2018","$6.8M"],[40.7479194,-73.92534107,"e","39TH ST (SOUTH)","Q","VGOOD","2017","$153.4M"],[40.72991378,-73.87321762,"f","60TH RD PED BRDG","Q","FAIR","2018","$5.4M"],[40.70076768,-73.85097027,"f","FOREST PARK DRIVE","Q","FAIR","2018","$45.0M"],[40.76416773,-73.76132079,"e","221ST ST","Q","VGOOD","2017","$27.2M"],[40.68815371,-73.84889177,"f","WOODHAVEN BLVD","Q","FAIR","2018","$89.2M"],[40.67053524,-73.84749244,"f","WHITELAW PED BRDG","Q","FAIR","2018","$24.8M"],[40.66875786,-73.84224357,"g","CROSS BAY BLVD","Q","GOOD","2017","$71.3M"],[40.67163986,-73.85295407,"f","RAMP TO LINDEN BLVD","Q","FAIR","2018","$15.1M"],[40.73353855,-73.77126968,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$12.6M"],[40.7365099,-73.75619001,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$11.9M"],[40.73798489,-73.74836996,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$13.1M"],[40.73491462,-73.76542183,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$12.2M"],[40.75084458,-73.83236759,"f","FLSHG MDW PK PED","Q","FAIR","2018","$37.8M"],[40.7361646,-73.77323033,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$11.7M"],[40.73813562,-73.73789953,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$4.5M"],[40.74063076,-73.72827749,"g","UNION TPKE","Q","GOOD","2017","$15.8M"],[40.71948969,-73.83251629,"c","FLUSHING MEADOW PK PED","Q","CLOSED","2002","$8.5M"],[40.74411326,-73.8384517,"f","FLUSHING MEADW PK RD","Q","FAIR","2017","$18.9M"],[40.73353099,-73.87036707,"f","WOODHAVEN BLVD","Q","FAIR","2018","$51.7M"],[40.73256978,-73.868163,"f","ELIOT AVE","Q","FAIR","2018","$62.4M"],[40.71776757,-73.9096929,"f","RUST ST","Q","FAIR","2017","$13.2M"],[40.71759955,-73.91001922,"f","SERVICE RD TURNAROUND","Q","FAIR","2017","$13.2M"],[40.57135623,-73.86929522,"f","BEACH CHANNEL DR WB","Q","FAIR","2017","$16.2M"],[40.71665094,-73.91130954,"f","FLUSHING AV SERVICE RD","Q","FAIR","2017","$13.2M"],[40.65618523,-73.83044358,"e","102ND ST","Q","VGOOD","2017","$22.1M"],[40.72873049,-73.83422919,"f","MEADOW LAKE BRIDGE","Q","FAIR","2018","$18.7M"],[40.68476097,-73.89119933,"e","HIGHLAND PK PED.","Q","VGOOD","2018","$8.6M"],[40.71304522,-73.83361794,"g","J.R. PKWY-UNION TPKE","Q","GOOD","2018","$31.2M"],[40.70834429,-73.87205471,"g","71ST AVE","Q","GOOD","2017","$12.6M"],[40.70208166,-73.85067554,"g","FOREST PARK DR","Q","GOOD","2017","$22.9M"],[40.64552107,-73.74841979,"f","ROCKAWAY BLVD","Q","FAIR","2017","$27.0M"],[40.73873992,-73.83823754,"f","BOATHOUSE BRIDGE","Q","FAIR","2017","$28.4M"],[40.61688538,-74.07467304,"e","TOMPKINS AVE","S","VGOOD","2018","$22.9M"],[40.63559291,-74.14379162,"g","JOHN ST PED BRDG","S","GOOD","2018","$4.7M"],[40.63511078,-74.14566698,"f","MORNINGSTAR ROAD","S","FAIR","2018","$35.5M"],[40.63435024,-74.14801948,"e","GRANITE AVE","S","VGOOD","2018","$32.9M"],[40.63406066,-74.15089463,"g","LAKE AVE","S","GOOD","2018","$26.6M"],[40.63402848,-74.15189112,"e","SIMONSON AVE","S","VGOOD","2017","$26.2M"],[40.63399323,-74.15328721,"g","VAN NAME AVE","S","GOOD","2018","$24.6M"],[40.63393043,-74.15502568,"g","VAN PELT AVE","S","GOOD","2017","$22.5M"],[40.6338636,-74.15703295,"g","DE HART AVE","S","GOOD","2017","$30.1M"],[40.63384615,-74.15808799,"f","UNION AVE","S","FAIR","2017","$29.8M"],[40.63383364,-74.16031927,"g","HARBOR ROAD","S","GOOD","2017","$26.4M"],[40.63355031,-74.16628019,"e","SOUTH AVE","S","VGOOD","2017","$38.2M"],[40.51337798,-74.25100155,"f","MAIN ST PED BRDG","S","FAIR","2018","$1.8M"],[40.51543574,-74.24555034,"c","TRACY AVE PED BRDG","S","CLOSED","2018","$2.9M"],[40.51722905,-74.24067941,"f","ARTHUR KILL ROAD","S","FAIR","2018","$16.6M"],[40.51768694,-74.23909987,"c","BETHEL AV PED BRDG","S","CLOSED","2018","$5.2M"],[40.51854949,-74.23463081,"g","PAGE AVE","S","GOOD","2017","$138.2M"],[40.51975072,-74.22868876,"f","RICHMOND VALLEY ROAD","S","FAIR","2017","$42.5M"],[40.51954154,-74.22964126,"f","RICHMOND VALLEY STA PED BRDG","S","FAIR","2018","$2.7M"],[40.52514322,-74.20080302,"e","SEGUINE AVE","S","VGOOD","2017","$14.6M"],[40.5330752,-74.19242613,"f","HUGUENOT AVE","S","FAIR","2017","$29.3M"],[40.53908346,-74.18364531,"g","ALBEE AVE","S","GOOD","2017","$29.2M"],[40.54064051,-74.17729877,"e","ANNADALE ROAD","S","VGOOD","2017","$15.9M"],[40.55119301,-74.15148191,"f","NELSON AVE PED BRDG","S","FAIR","2018","$1.4M"],[40.55164975,-74.15052416,"g","GIFFORDS LANE","S","GOOD","2018","$13.7M"],[40.55266823,-74.14557455,"e","GREAVES AVE","S","VGOOD","2017","$11.9M"],[40.56457079,-74.12698049,"f","GUYON AVE","S","FAIR","2017","$31.3M"],[40.56524892,-74.12615621,"f","CEDARVIEW AVE PED BRDG","S","FAIR","2018","$2.8M"],[40.57132932,-74.12007722,"f","BEACH AVE","S","FAIR","2017","$17.1M"],[40.57243588,-74.11865671,"f","ROSS AVE","S","FAIR","2017","$17.1M"],[40.5732064,-74.11762201,"f","ROSE AVE","S","FAIR","2017","$17.1M"],[40.57402597,-74.11644465,"f","NEW DORP LANE","S","FAIR","2017","$34.2M"],[40.57748273,-74.11166374,"g","BANCROFT AVE","S","GOOD","2017","$26.9M"],[40.57900202,-74.10967078,"f","FREMONT AVE PED BRDG","S","FAIR","2018","$3.6M"],[40.57951495,-74.1089056,"e","LINCOLN AVE","S","VGOOD","2017","$20.2M"],[40.58062028,-74.10736619,"e","MIDLAND AVE","S","VGOOD","2017","$13.3M"],[40.60165938,-74.08516935,"e","WEST FINGERBOARD RD","S","VGOOD","2017","$23.8M"],[40.6038114,-74.08356021,"g","CLOVE ROAD","S","GOOD","2018","$23.6M"],[40.61689682,-74.0745641,"g","TOMPKINS AVE","S","GOOD","2018","$24.1M"],[40.63622532,-74.0747643,"f","HANNAH ST","S","FAIR","2018","$60.1M"],[40.63776732,-74.07494904,"f","MINTHORNE ST PED BRDG","S","FAIR","2018","$27.0M"],[40.54052663,-74.17817234,"f","BELFIELD AVE PED BRDG","S","FAIR","2018","$1.8M"],[40.61794255,-74.10862504,"f","WEST FOOTBRIDGE","S","FAIR","2018","$4.0M"],[40.61808248,-74.10798903,"f","EAST FOOTBRIDGE","S","FAIR","2018","$4.0M"],[40.61986356,-74.11187501,"f","BRIDGE OVER DAM","S","FAIR","2018","$4.5M"],[40.62268809,-74.11844083,"f","MARTLINGS AVE","S","FAIR","2017","$31.5M"],[40.62300705,-74.11844083,"f","S OF BROOKS LAKE","S","FAIR","2018","$3.1M"],[40.62510006,-74.12120983,"f","FOOTBRIDGE","S","FAIR","2018","$3.6M"],[40.62618371,-74.12218233,"f","FB S OF FOREST AV","S","FAIR","2018","$3.1M"],[40.62740966,-74.1225601,"g","FOREST AVE","S","GOOD","2017","$7.2M"],[40.51766452,-74.20110582,"e","HYLAN BLVD","S","VGOOD","2018","$51.3M"],[40.52004008,-74.2398148,"f","ARTHUR KILL ROAD","S","FAIR","2017","$7.0M"],[40.61740041,-74.07490751,"f","TOMPKINS AVE","S","FAIR","2018","$12.1M"],[40.57744624,-74.08406008,"e","SLATER BLVD","S","VGOOD","2017","$9.2M"],[40.59838427,-74.17559457,"f","TRAVIS AVE","S","FAIR","2017","$7.7M"],[40.60814465,-74.18862198,"e","CHELSEA ROAD","S","VGOOD","2017","$9.9M"],[40.77235088,-73.99417376,"f","MILLER HWY - RTE 9A","M","FAIR","2017","$1226.1M"],[40.745574,-73.73508829,"e","DOUGLASTON PKWY","Q","VGOOD","2018","$19.8M"],[40.74579896,-73.73506792,"g","DOUGLASTON PKWY","Q","GOOD","2018","$29.7M"],[40.71126798,-73.72796209,"f","HEMPSTEAD AVE","Q","FAIR","2018","$43.7M"],[40.78950298,-73.82250677,"f","678I SB TO BCIP EB","Q","FAIR","2018","$10.4M"],[40.82891233,-73.95038023,"e","HHP","M","VGOOD","2018","$8.6M"],[40.87280072,-73.92828733,"g","HHP NB","M","GOOD","2018","$4.1M"],[40.87277582,-73.92918228,"g","HHP SB","M","GOOD","2018","$5.2M"],[40.80326424,-73.91659715,"f","278I","B","FAIR","2017","$164.1M"],[40.7515072,-73.99764404,"f","W 31ST ST","M","FAIR","2018","$39.6M"],[40.68343388,-73.72667788,"e","BCIP","Q","VGOOD","2018","$28.8M"],[40.82705965,-73.95201125,"e","RIVERSIDE DRIVE","M","VGOOD","2017","$26.7M"],[40.75285252,-73.85158476,"f","ROOSEVELT AVE","Q","FAIR","2017","$32.8M"],[40.72980252,-73.76861813,"f","FRANCIS LEWIS BLVD","Q","FAIR","2017","$32.3M"],[40.844192,-73.93149397,"f","HRD RAMP TO GWB","M","FAIR","2017","$512.7M"],[40.79643165,-73.97599659,"f","HHP","M","FAIR","2017","$407.5M"],[40.78587917,-73.98438689,"f","79 ST PED PLAZA","M","FAIR","2017","$131.6M"],[40.78554845,-73.98456808,"f","79 ST TRAFFIC CIRC","M","FAIR","2017","$108.6M"],[40.78494578,-73.98477805,"f","79 ST RAMP TO HHP","M","FAIR","2018","$13.1M"],[40.78535589,-73.98491035,"f","79 ST RAMP TO GAR","M","FAIR","2018","$53.2M"],[40.78613072,-73.9845603,"g","GAR RAMP TO 79 ST","M","GOOD","2018","$40.9M"],[40.7862283,-73.9839743,"f","SB HHP RAMP TO 79 ST","M","FAIR","2018","$13.2M"],[40.69983391,-73.98870089,"e","BROOKLYN BR APPROACH","B","VGOOD","2018","$29.2M"],[40.6924417,-73.99992582,"f","BROOKLYN PROMENADE","B","FAIR","2018","$207.8M"],[40.71715497,-74.01287164,"g","CHAMBERS ST PED BRDG","M","GOOD","2018","$33.7M"],[40.69973684,-73.99629527,"g","278I W.B.  (B.Q.E.)","B","GOOD","2017","$388.8M"],[40.69953353,-73.99640214,"f","278I E.B.  (B.Q.E.)","B","FAIR","2018","$601.7M"],[40.70102999,-73.98868823,"f","278I W.B.  (B.Q.E.)","B","FAIR","2017","$47.2M"],[40.7006902,-73.98869005,"g","278I E.B.  (B.Q.E.)","B","GOOD","2017","$92.4M"],[40.6957919,-73.99830669,"g","278I W.B.  (B.Q.E.)","B","GOOD","2017","$55.1M"],[40.69590634,-73.99794266,"g","278I E.B.  (B.Q.E.)","B","GOOD","2017","$42.1M"],[40.74885353,-73.96744685,"f","FDR NB E42ND TO E49TH ST","M","FAIR","2017","$111.4M"],[40.85942624,-73.92250136,"f","PS-5 PED BRDG","M","FAIR","2018","$5.8M"],[40.73298637,-73.74672705,"f","SPRINGFIELD BLVD","Q","FAIR","2017","$7.3M"],[40.52536291,-74.20928623,"g","AMBOY ROAD","S","GOOD","2018","$6.2M"],[40.85266343,-73.92142851,"f","MATTHEWSON ROAD","B","FAIR","2018","$67.0M"],[40.77935789,-73.98752988,"e","W 70TH ST","M","VGOOD","2017","$77.7M"],[40.77946565,-73.98786833,"e","RIVERSIDE DRIVE SOUTH","M","VGOOD","2017","$310.7M"],[40.77800009,-73.98819849,"e","W 68TH ST","M","VGOOD","2017","$24.2M"],[40.83412596,-73.94892726,"g","RIVERSIDE DRIVE","M","GOOD","2017","$15.9M"],[40.77674,-73.98889,"e","W 66TH ST","M","VGOOD","2018","$20.2M"],[40.8358,-73.88104,"e","STARLIGHT PARK PED BRDG","B","VGOOD","2018","$8.6M"],[40.65170605,-73.86574689,"g","ERSKINE ST","U","GOOD","2018","$37.5M"],[40.64291747,-74.07338051,"e","PARKING EXIT RAMP","S","VGOOD","2018","$93.5M"],[40.64359472,-74.07260846,"e","BUS STATION NORTH","S","VGOOD","2018","$292.3M"],[40.64114072,-74.07400684,"g","BUS STATION SOUTH","S","GOOD","2018","$697.6M"],[40.64442806,-74.07650364,"e","NORTH RAMP","S","VGOOD","2014","$27.0M"],[40.64283251,-74.0724803,"g","BUS STA ENTR RAMP","S","GOOD","2017","$177.0M"],[40.64233972,-74.07464785,"e","PARKING ENTR RAMP","S","VGOOD","2018","$38.7M"],[40.64294527,-74.07506944,"g","BUS STATION EXIT RAMP","S","GOOD","2018","$126.8M"],[40.77150123,-73.94658164,"f","E 81 ST PED BRDG","M","FAIR","2014","$2.7M"],[40.77521,-73.98945,"e","W 64TH ST","M","VGOOD","2018","$23.4M"],[40.82320964,-73.92169809,"f","E 156TH ST","B","FAIR","2018","$228.7M"],[40.64340291,-74.07200809,"g","SI FERRY PED BRDG","S","GOOD","2018","$13.1M"],[40.64224634,-74.07429076,"e","BOROUGH PLACE - RAMP A","S","VGOOD","2018","$8.4M"],[40.82148921,-73.91116345,"f","BROOKE AVE","B","FAIR","2018","$94.7M"],[40.59604,-74.16875,"e","SPRINGVILLE GREENWAY PED","S","VGOOD","2018","$1.2M"],[40.79777,-73.91634,"e","RANDALL'S ISLAND CONN. PED","B","VGOOD","2018","$13.7M"],[40.79257759,-73.97857709,"f","RIVERSIDE PARK - SOUTH","M","FAIR","2018","$1137.3M"],[40.80476925,-73.96946622,"p","RIVERSIDE PARK - NORTH","M","POOR","2018","$2368.4M"],[40.83092592,-73.9512389,"e","W 151ST ST PED -WEST RAMP","M","VGOOD","2018","$15.2M"],[40.73926043,-73.7407638,"f","MOTOR PKWY (PED)","Q","FAIR","2018","$3.6M"],[40.63524204,-73.73991959,"f","ROCKAWAY BLVD","Q","FAIR","2017","$82.4M"],[40.76359815,-73.76651642,"c","216TH ST PED BRDG","Q","CLOSED","2018","$4.3M"],[40.76143432,-73.79912479,"f","167TH ST PED BRDG","Q","FAIR","2018","$3.8M"],[40.8567168,-73.93262568,"f","W191ST ST PED TNL","M","FAIR","2018","$9.0M"],[40.78484092,-73.98368415,"f","HHP ON/OFF RMP-79TH ST SO. SID","M","FAIR","2018","$3.8M"],[40.78571513,-73.98305938,"f","HHP ON/OFF RMP-79TH ST NO. SID","M","FAIR","2018","$3.8M"],[40.76591809,-73.95159803,"f","E 72ND ST","M","FAIR","2018","$6.4M"],[40.7194896855,-73.8325162924,"c","FLUSHING MEADOW PK PED","Q","CLOSED","2002","$8.6M"],[40.8419921379,-73.9280386576,"f","HIGH BRIDGE PDOVP","B","FAIR","2002","$153.4M"],[40.7715012271,-73.9465816412,"f","E 81 ST PED BRDG","M","FAIR","2014","$2.7M"],[40.6444280577,-74.0765036386,"e","NORTH RAMP","S","VGOOD","2014","$27.0M"],[40.6623063685,-73.968818213,"g","CENTER DR (NETHERMEAD ARCHES)","B","GOOD","2017","$31.6M"],[40.8691964948,-73.8803841332,"g","MOSHOLU PARKWAY","B","GOOD","2017","$38.2M"],[40.8132680054,-73.9301662948,"g","GRAND CONCOURSE","B","GOOD","2017","$42.8M"],[40.7855484492,-73.9845680784,"f","79 ST TRAFFIC CIRC","M","FAIR","2017","$108.6M"],[40.6033151183,-73.9802831947,"e","HIGHLAWN AVE","B","VGOOD","2017","$31.3M"],[40.8008767916,-73.9176072015,"e","BRUCKNER EXPWY","B","VGOOD","2017","$17.1M"],[40.6714578701,-73.9985473367,"g","HAMILTON AVE BRIDGE","B","GOOD","2017","$38.7M"],[40.5406405085,-74.1772987671,"e","ANNADALE ROAD","S","VGOOD","2017","$15.9M"],[40.9002179742,-73.8900645387,"f","MOSHOLU PARKWAY","B","FAIR","2017","$33.3M"],[40.8620847482,-73.9132560622,"g","W FORDHAM RD","B","GOOD","2017","$72.2M"],[40.8600800791,-73.891431277,"g","FORDHAM RD - E 189TH ST","B","GOOD","2017","$179.9M"],[40.8235330416,-73.9185871688,"g","E 158TH ST","B","GOOD","2017","$15.3M"],[40.8244057965,-73.8725504309,"g","BRUCKNER EXPWY SB","B","GOOD","2017","$55.8M"],[40.9008212953,-73.8608475388,"f","NEREID AVE (E 240TH ST)","B","FAIR","2017","$261.6M"],[40.8243422399,-73.8725210756,"g","BRUCKNER EXPWY NB","B","GOOD","2017","$100.3M"],[40.5965559636,-73.9078237137,"e","FLATBUSH AVE","B","VGOOD","2017","$63.3M"],[40.7611767255,-73.9558418387,"g","E 63TH ST PED BRDG","M","GOOD","2017","$9.4M"],[40.8174638272,-73.8926652338,"e","TIFFANY ST","B","VGOOD","2017","$32.7M"],[40.8955192884,-73.863216478,"g","E 233RD ST","B","GOOD","2018","$23.9M"],[40.7006296279,-73.9869661594,"e","278I  (B.Q.E.) RAMP TO BKLN BR","B","VGOOD","2018","$5.0M"],[40.7022860453,-73.852494409,"f","MYRTLE AVE","Q","FAIR","2018","$30.3M"],[40.8590273247,-73.876420456,"g","SNUFF MILL ROAD","B","GOOD","2018","$21.6M"],[40.8668417729,-73.8742642583,"g","MOSHOLU PARKWAY","B","GOOD","2018","$73.3M"],[40.8994161162,-73.8853146572,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$19.4M"],[40.8778925938,-73.8684218426,"e","GUN HILL ROAD","B","VGOOD","2018","$39.1M"],[40.7889575718,-73.9824696223,"e","HHP","M","VGOOD","2018","$10.2M"],[40.6666350829,-73.8104529338,"g","130TH ST","Q","GOOD","2018","$30.6M"],[40.7015954403,-73.9885938088,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$11.5M"],[40.7686697599,-73.9698148999,"e","TRANSVERSE RD #1 WB","M","VGOOD","2018","$6.8M"],[40.8298591306,-73.8375554352,"e","BE SB SERVICE RD","B","VGOOD","2018","$31.9M"],[40.7011721405,-73.9878307062,"g","278I  (B.Q.E.)","B","GOOD","2018","$20.2M"],[40.7010523012,-73.9867857513,"e","278I  (B.Q.E.)","B","VGOOD","2018","$22.9M"],[40.7013511466,-73.9885671014,"e","278I EB (B.Q.E.)","B","VGOOD","2018","$11.8M"],[40.76954544,-73.9790241042,"g","W 65TH ST ENTR EB","M","GOOD","2018","$6.3M"],[40.7684924522,-73.9756891074,"g","CENTER DR (DRIPROCK ARCH)","M","GOOD","2018","$8.1M"],[40.7786241977,-73.9724010342,"g","WEST DR (BALCONY BRDG)","M","GOOD","2018","$8.5M"],[40.7702819142,-73.9790755388,"e","WEST DR (DALEHEAD ARCH)","M","VGOOD","2018","$9.2M"],[40.8992560692,-73.9069060908,"g","W 252ND ST","B","GOOD","2018","$20.2M"],[40.6737933184,-73.734270359,"g","MERRICK BLVD","Q","GOOD","2018","$26.9M"],[40.7692659216,-73.9799552511,"g","WEST DR (GREYSHOT ARCH)","M","GOOD","2018","$11.5M"],[40.7760288154,-73.9754853374,"g","W 72 ST ENTR (RIFTSTONE ARCH)","M","GOOD","2018","$16.6M"],[40.7818014072,-73.9694271369,"g","WEST DR (WINTERDALE ARCH)","M","GOOD","2018","$11.8M"],[40.8637517806,-73.9316551293,"f","CORBIN PL OVERPASS","M","FAIR","2018","$10.2M"],[40.767903335,-73.9731580213,"f","EAST DR (GREEN GAP ARCH)","M","FAIR","2018","$9.7M"],[40.6737972736,-73.7345912351,"g","MERRICK BLVD","Q","GOOD","2018","$27.0M"],[40.8228473731,-73.955691642,"g","RIVERSIDE DRIVE","M","GOOD","2018","$30.5M"],[40.7179479229,-73.9748864794,"g","FDR NB RAMP TO HOUSTON ST","M","GOOD","2018","$33.5M"],[40.7199849294,-73.974580404,"g","HOUSTON ST RAMP TO FDR NB","M","GOOD","2018","$32.2M"],[40.781552541,-73.9627769651,"f","EAST DRIVE","M","FAIR","2018","$20.8M"],[40.7958399296,-73.9556686309,"f","EAST DR (HUDDLESTONE ARCH)","M","FAIR","2018","$5.5M"],[40.6962041079,-73.8747335663,"f","JACKIE ROBINSON PKWY","Q","FAIR","2018","$17.3M"],[40.8728007248,-73.9282873325,"g","HHP NB","M","GOOD","2018","$4.1M"],[40.8727758215,-73.9291822788,"g","HHP SB","M","GOOD","2018","$5.2M"],[40.857382145,-73.8818983895,"g","CROTONA AVE","B","GOOD","2018","$35.9M"],[40.8567810816,-73.8806855461,"g","SOUTHERN BLVD","B","GOOD","2018","$60.3M"],[40.8221661503,-73.9084320044,"f","EAGLE AVE","B","FAIR","2018","$12.6M"],[40.7744876503,-73.9688879386,"g","EAST DR (TREFOIL ARCH)","M","GOOD","2018","$8.6M"],[40.7112783237,-73.7285923769,"f","HEMPSTEAD AVE","Q","FAIR","2018","$63.9M"],[40.7871825974,-73.8133286361,"f","150TH ST","Q","FAIR","2018","$26.6M"],[40.7867415767,-73.8100629607,"f","CLINTONVILLE ST","Q","FAIR","2018","$33.3M"],[40.7878651075,-73.8159533496,"f","149TH ST","Q","FAIR","2018","$27.9M"],[40.7881524369,-73.8167834717,"f","14TH AVE","Q","FAIR","2018","$36.5M"],[40.7863675094,-73.8062168787,"f","FRANCIS LEWIS BLVD","Q","FAIR","2018","$41.0M"],[40.7792251383,-73.9732723501,"g","W77 ST ENTR (EAGLEVALE ARCH)","M","GOOD","2018","$13.8M"],[40.7490727489,-73.9704785821,"e","TUDOR CITY PLACE","M","VGOOD","2018","$29.8M"],[40.851397515,-73.9412834468,"e","W 181 ST","M","VGOOD","2018","$36.9M"],[40.79257758983,-73.97857709496,"f","RIVERSIDE PARK - SOUTH","M","FAIR","2018","$1137.3M"],[40.7961865758,-73.9759904607,"g","HHP NB","M","GOOD","2018","$9.0M"],[40.8781311047,-73.8694577114,"g","GUN HILL ROAD","B","GOOD","2018","$42.3M"],[40.798192275,-73.9758277101,"g","HHP SB","M","GOOD","2018","$9.0M"],[40.6786777242,-73.7297094505,"g","130TH AVE","Q","GOOD","2018","$19.8M"],[40.6788417893,-73.7299254087,"f","130TH AVE","Q","FAIR","2018","$19.8M"],[40.8949615896,-73.8623028674,"f","E 233RD ST","B","FAIR","2018","$32.0M"],[40.7953410302,-73.9778708312,"e","HHP SB","M","VGOOD","2018","$9.4M"],[40.798037768,-73.9750530454,"e","HHP NB","M","VGOOD","2018","$9.0M"],[40.8528299825,-73.8741192939,"g","BOSTON ROAD","B","GOOD","2018","$23.7M"],[40.8685352336,-73.8774104183,"e","BOTANICAL GARDEN ROAD","B","VGOOD","2018","$9.3M"],[40.8289123312,-73.9503802343,"e","HHP","M","VGOOD","2018","$8.6M"],[40.6664288942,-73.7398745575,"f","N CONDUIT AVE WB","Q","FAIR","2018","$18.0M"],[40.8721038917,-73.8877427033,"f","GRAND CONCOURSE","B","FAIR","2018","$42.5M"],[40.825027563,-73.9118668479,"e","E 163RD STREET","B","VGOOD","2018","$14.4M"],[40.8624356296,-73.8971836032,"e","EAST FORDHAM RD","B","VGOOD","2018","$46.4M"],[40.7697716937,-73.9745187548,"f","CENTER DRIVE","M","FAIR","2018","$27.5M"],[40.6798149077,-73.8969547502,"f","HIGHLAND BLVD W.B.","B","FAIR","2018","$15.8M"],[40.7005683065,-73.9853693077,"f","278I  (B.Q.E.)","B","FAIR","2018","$39.1M"],[40.6663297462,-73.740397409,"g","N CONDUIT AVE WB","Q","GOOD","2018","$29.3M"],[40.6798002195,-73.8968661877,"g","HIGHLAND BLVD E.B.","B","GOOD","2018","$22.1M"],[40.8140993354,-73.9346409621,"g","RAMP TO MADISON AVENUE","M","GOOD","2018","$90.0M"],[40.7192166729,-73.7265044645,"f","BELMONT PARK NO. RAMP","Q","FAIR","2018","$15.3M"],[40.6798375972,-73.896846815,"f","HIGHLAND BLVD W.B.","B","FAIR","2018","$21.1M"],[40.8447447407,-73.9113203201,"f","GRAND CONCOURSE","B","FAIR","2018","$68.0M"],[40.7892124154,-73.8193737284,"f","147TH ST","Q","FAIR","2018","$28.4M"],[40.8000133611,-73.9578681405,"f","W110 ST ENTR (MOUNTCLIFF ARCH)","M","FAIR","2018","$6.1M"],[40.7117501362,-73.8360682755,"f","MARKWOOD ROAD","Q","FAIR","2018","$19.8M"],[40.7106816534,-73.8374285206,"g","UNION TPKE","Q","GOOD","2018","$24.4M"],[40.7683456986,-73.9710570984,"g","TRNSVRS RD 1 EB (DENESMOUTH AR","M","GOOD","2018","$8.0M"],[40.699014347,-73.9841294192,"g","278I  (B.Q.E.)","B","GOOD","2018","$5.9M"],[40.740100945,-73.8997507499,"g","65TH PLACE","Q","GOOD","2018","$52.5M"],[40.8233630136,-73.9111246646,"e","E 161ST STREET","B","VGOOD","2018","$57.6M"],[40.8764564799,-73.8702864776,"f","BRONX BLVD S.B.","B","FAIR","2018","$12.6M"],[40.8762385989,-73.8700782764,"f","BRONX BLVD N.B.","B","FAIR","2018","$12.6M"],[40.7428751816,-73.8963752217,"g","WOODSIDE AVE","Q","GOOD","2018","$32.9M"],[40.5176645212,-74.2011058191,"e","HYLAN BLVD","S","VGOOD","2018","$51.3M"],[40.8428262968,-73.8377370848,"f","WESTCHESTER AVE","B","FAIR","2018","$71.4M"],[40.8273340527,-73.9352207366,"f","A.C. POWELL BLVD N.B.","M","FAIR","2018","$13.5M"],[40.8267063053,-73.935383003,"f","W 153 ST","M","FAIR","2018","$13.9M"],[40.8554505688,-73.876796129,"g","EAST FORDHAM RD","B","GOOD","2018","$43.0M"],[40.8450823845,-73.9437772803,"g","TO GWB OPP W 171ST ST","M","GOOD","2018","$49.0M"],[40.6839566435,-74.001468914,"g","UNION ST","B","GOOD","2018","$22.3M"],[40.7736990395,-73.971074255,"g","72 ST CROSS DR (TERRACE BRDG)","M","GOOD","2018","$22.8M"],[40.8629492881,-73.9327888292,"f","FORT TRYON PLACE","M","FAIR","2018","$15.1M"],[40.6970383791,-73.7270224522,"f","BCIP","Q","FAIR","2018","$32.9M"],[40.7781972934,-73.9665195653,"g","EAST DRIVE","M","GOOD","2018","$23.4M"],[40.8737877698,-73.9197313821,"e","ISHAM PK VEHICULAR","M","VGOOD","2018","$4.1M"],[40.7799359197,-73.9710302482,"g","WEST DRIVE","M","GOOD","2018","$28.8M"],[40.7085006201,-73.9992343743,"g","FDR DR S.B. OFF RMP","M","GOOD","2018","$53.7M"],[40.7894490602,-73.9573934132,"f","EAST DRIVE","M","FAIR","2018","$24.9M"],[40.791647,-73.9625572568,"f","WEST DRIVE","M","FAIR","2018","$17.6M"],[40.8787473152,-73.8691725777,"f","BRONX BLVD S.B.","B","FAIR","2018","$8.0M"],[40.7690177938,-73.972844306,"f","EAST DRIVE","M","FAIR","2018","$24.0M"],[40.8784621346,-73.8690122162,"f","BRONX BLVD N.B.","B","FAIR","2018","$8.1M"],[40.8387156848,-73.9137072684,"f","GRAND CONCOURSE","B","FAIR","2018","$161.6M"],[40.7844267767,-73.9672425713,"g","WEST DRIVE","M","GOOD","2018","$20.7M"],[40.80476925212,-73.96946622357,"p","RIVERSIDE PARK - NORTH","M","POOR","2018","$2368.4M"],[40.7715469746,-73.977391245,"p","WEST DRIVE","M","POOR","2018","$31.5M"],[40.6998093185,-73.9845848907,"g","278I  (B.Q.E.)","B","GOOD","2018","$49.6M"],[40.6906712587,-73.7266823575,"f","LINDEN BLVD","Q","FAIR","2018","$30.2M"],[40.7081832025,-73.9989842162,"f","RAMP TO N.B. FDR DRIVE","M","FAIR","2018","$71.2M"],[40.7058063727,-73.7272553898,"g","BELMONT PARK SO. RAMP","Q","GOOD","2018","$14.2M"],[40.5253629064,-74.209286229,"g","AMBOY ROAD","S","GOOD","2018","$6.2M"],[40.7863220285,-73.7949918647,"f","UTOPIA PKWY","Q","FAIR","2018","$32.4M"],[40.7257852351,-73.8997315673,"f","HAMILTON PLACE","Q","FAIR","2018","$50.8M"],[40.60442293728,-73.89941343924,"e","BSHP WB","B","VGOOD","2018","$644.7M"],[40.6174004146,-74.074907507,"f","TOMPKINS AVE","S","FAIR","2018","$12.1M"],[40.7559096855,-74.0053596325,"f","W 33RD ST","M","FAIR","2018","$74.2M"],[40.7433580746,-73.8957367548,"g","69TH ST","Q","GOOD","2018","$56.7M"],[40.7602573478,-73.9614660496,"e","TO E 60TH ST FROM QNS","M","VGOOD","2018","$66.7M"],[40.7455740003,-73.7350882926,"e","DOUGLASTON PKWY","Q","VGOOD","2018","$19.8M"],[40.7598455109,-73.961758643,"e","TO QNS FROM E 59TH ST","M","VGOOD","2018","$66.7M"],[40.7457989605,-73.7350679224,"g","DOUGLASTON PKWY","Q","GOOD","2018","$29.7M"],[40.8487297051,-73.898634546,"f","E 178TH ST PED BRDG","B","FAIR","2018","$3.3M"],[40.8501161213,-73.897882944,"g","E 179TH ST PED BRDG","B","GOOD","2018","$4.5M"],[40.8703395121,-73.8762043192,"f","204TH ST PED BRDG","B","FAIR","2018","$21.1M"],[40.8365111838,-73.9056961218,"f","ST PAULS PL PED BRDG","B","FAIR","2018","$4.0M"],[40.7568145178,-73.9544077025,"g","25X TO/FROM 2ND AVE","M","GOOD","2018","$190.4M"],[40.7112679776,-73.727962089,"f","HEMPSTEAD AVE","Q","FAIR","2018","$43.7M"],[40.6834338846,-73.7266778781,"e","BCIP","Q","VGOOD","2018","$28.8M"],[40.870596692,-73.8730564112,"f","PARK ROAD (204TH ST)","B","FAIR","2018","$21.1M"],[40.8400247439,-73.8784080115,"f","E TREMONT AVE","B","FAIR","2018","$58.0M"],[40.8196709309,-73.9118331408,"f","E 156TH STREET","B","FAIR","2018","$10.7M"],[40.6106622594,-74.0356305482,"g","4TH AVE","B","GOOD","2018","$27.4M"],[40.6845747163,-74.0011301981,"g","SACKETT ST","B","GOOD","2018","$22.3M"],[40.8661908407,-73.8751045116,"f","MAGNOLIA WAY","B","FAIR","2018","$27.9M"],[40.584575609,-73.94855443,"f","BSHP","B","FAIR","2018","$63.0M"],[40.8855804119,-73.8030684098,"f","PELHAM BAY PK EQUES","B","FAIR","2018","$32.9M"],[40.6937769913,-73.9988381985,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$9.4M"],[40.5897702216,-73.9928397693,"e","BSHP","B","VGOOD","2018","$30.1M"],[40.8560249224,-73.8328044088,"f","BRONX PELHAM PKWY","B","FAIR","2018","$81.3M"],[40.5845503491,-73.9509386432,"f","BSHP","B","FAIR","2018","$30.6M"],[40.6688020054,-73.7381187744,"g","FRANCIS LEWIS BLVD","Q","GOOD","2018","$26.9M"],[40.8393679196,-73.904095736,"e","CLAREMONT PKWY","B","VGOOD","2018","$27.0M"],[40.8593317426,-73.8920074328,"f","E 188TH ST","B","FAIR","2018","$23.9M"],[40.845186952,-73.900680728,"f","E 175TH ST","B","FAIR","2018","$16.1M"],[40.8425966281,-73.9021999952,"f","E 173RD ST","B","FAIR","2018","$13.5M"],[40.6659928377,-73.7411609894,"f","SUNRISE HWY W.B.","Q","FAIR","2018","$24.6M"],[40.5857151429,-73.9313215856,"f","KNAPP ST","B","FAIR","2018","$42.3M"],[40.6685202767,-73.7379141713,"f","FRANCIS LEWIS BLVD","Q","FAIR","2018","$27.0M"],[40.83346759,-73.9074301495,"f","E 169TH ST","B","FAIR","2018","$13.9M"],[40.822585941,-73.9202181335,"f","CONCOURSE VILLAGE E","B","FAIR","2018","$54.3M"],[40.8319110475,-73.9083615658,"g","E 168TH ST","B","GOOD","2018","$26.5M"],[40.8303415315,-73.9093090818,"e","E 167TH ST","B","VGOOD","2018","$16.0M"],[40.7089703707,-73.8415254492,"e","JACKIE ROBINSON PKWY","Q","VGOOD","2018","$39.0M"],[40.8358424172,-73.906096582,"e","E 170TH ST","B","VGOOD","2018","$14.6M"],[40.6891478155,-73.9988938105,"e","CONGRESS ST","B","VGOOD","2018","$22.5M"],[40.6389736785,-74.0364549781,"e","BSHP","B","VGOOD","2018","$22.6M"],[40.6351107776,-74.1456669798,"f","MORNINGSTAR ROAD","S","FAIR","2018","$35.5M"],[40.6663886233,-73.8348632355,"g","COHANCY ST","Q","GOOD","2018","$29.0M"],[40.6639774888,-73.990612237,"g","5TH AVE","B","GOOD","2018","$39.6M"],[40.6168853788,-74.0746730389,"e","TOMPKINS AVE","S","VGOOD","2018","$22.9M"],[40.5849556243,-73.9437983385,"f","BSHP","B","FAIR","2018","$53.7M"],[40.878484328,-73.8708071063,"e","GUN HILL RD","B","VGOOD","2018","$41.0M"],[40.7604820197,-73.9633562973,"g","TO QNS FROM E 58TH ST","M","GOOD","2018","$67.7M"],[40.8141187687,-73.9125101418,"f","E 149TH ST/JACKSON AVE","B","FAIR","2018","$30.4M"],[40.720579172,-73.7257088012,"g","SUPERIOR ROAD","Q","GOOD","2018","$30.8M"],[40.868484417,-73.8796157523,"f","CONN RD BETWEEN MOS","B","FAIR","2018","$24.8M"],[40.8665772162,-73.8829900254,"f","BEDFORD PARK BLVD","B","FAIR","2018","$29.2M"],[40.5850293863,-73.9576127106,"g","E 12TH ST","B","GOOD","2018","$71.6M"],[40.8950911157,-73.8628087515,"g","E 233RD ST","B","GOOD","2018","$34.5M"],[40.8680338974,-73.8796788164,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$40.0M"],[40.7029349086,-73.8582410902,"e","MYRTLE AVE","Q","VGOOD","2018","$28.6M"],[40.8518469718,-73.8968704338,"f","E 180TH ST","B","FAIR","2018","$22.3M"],[40.8278409069,-73.9120419267,"f","E 165TH ST","B","FAIR","2018","$74.0M"],[40.8256169704,-73.915252341,"f","E 162ND ST","B","FAIR","2018","$21.0M"],[40.822529879,-73.9278134316,"e","GERARD AVE","B","VGOOD","2018","$23.0M"],[40.8557980404,-73.8945645836,"f","E 183TH ST","B","FAIR","2018","$18.4M"],[40.7659573253,-73.9034107555,"g","49TH ST","Q","GOOD","2018","$23.9M"],[40.8583137966,-73.8928333213,"g","E 187TH ST","B","GOOD","2018","$17.0M"],[40.6922411374,-73.8823810179,"g","CYPRESS HILLS ST","Q","GOOD","2018","$22.9M"],[40.7608375395,-73.9019631988,"g","BULOVA AVE","Q","GOOD","2018","$14.8M"],[40.5841741318,-73.9868095045,"g","CROPSEY AVE","B","GOOD","2018","$59.0M"],[40.7684915339,-73.9050506686,"f","278I NB (BQE WEST LEG)","Q","FAIR","2018","$32.3M"],[40.7679966764,-73.9039855971,"f","47TH ST","Q","FAIR","2018","$26.2M"],[40.761169261,-73.9951535986,"f","W 44TH ST","M","FAIR","2018","$18.4M"],[40.7605609115,-73.9956178966,"g","W 43RD ST","M","GOOD","2018","$18.6M"],[40.5839624242,-73.9667399297,"e","BSHP","B","VGOOD","2018","$133.4M"],[40.7342173915,-73.7226418604,"f","HILLSIDE AVE","Q","FAIR","2018","$43.5M"],[40.7686578976,-73.9069770008,"f","44TH ST","Q","FAIR","2018","$25.1M"],[40.818112621,-73.9254139108,"g","E 149TH ST","B","GOOD","2018","$134.1M"],[40.7015295208,-73.9897950969,"e","278I EB (B.Q.E.)","B","VGOOD","2018","$11.2M"],[40.7012644602,-73.9898240609,"e","278I WB (B.Q.E.)","B","VGOOD","2018","$11.2M"],[40.7624430452,-73.994300466,"f","W 46TH ST","M","FAIR","2018","$18.6M"],[40.7617898466,-73.9946747357,"g","W 45TH ST","M","GOOD","2018","$18.4M"],[40.6983674291,-73.9830428778,"g","278I  (B.Q.E.)","B","GOOD","2018","$232.6M"],[40.66590948,-73.7407663208,"f","SUNRISE HWY W.B.","Q","FAIR","2018","$18.4M"],[40.7637444794,-73.9934757102,"f","W 48TH ST","M","FAIR","2018","$18.4M"],[40.7630519597,-73.9937861598,"f","W 47TH ST","M","FAIR","2018","$18.4M"],[40.6998339118,-73.9887008888,"e","BROOKLYN BR APPROACH","B","VGOOD","2018","$29.2M"],[40.740890987,-73.7266598175,"f","UNION TPKE","Q","FAIR","2018","$75.2M"],[40.666973829,-73.7669808419,"g","FARMERS BLVD","Q","GOOD","2018","$28.8M"],[40.8216637765,-73.9272518135,"f","WALTON AVE","B","FAIR","2018","$16.2M"],[40.7851763869,-73.9831979744,"f","W 79 ST","M","FAIR","2018","$20.2M"],[40.7243874706,-73.7245887736,"f","JAMAICA AVE","Q","FAIR","2018","$55.1M"],[40.7697367611,-73.9146166746,"f","35TH ST","Q","FAIR","2018","$38.4M"],[40.7694500201,-73.9126951494,"g","37TH ST","Q","GOOD","2018","$23.0M"],[40.6659675761,-73.757988844,"g","SPRINGFIELD BLVD","Q","GOOD","2018","$38.2M"],[40.8418610366,-73.9293263357,"f","DEPOT PLACE","B","FAIR","2018","$119.5M"],[40.6606733899,-73.9621279419,"f","LINCOLN ROAD","B","FAIR","2018","$28.1M"],[40.7130452157,-73.8336179386,"g","J.R. PKWY-UNION TPKE","Q","GOOD","2018","$31.2M"],[40.5857136854,-73.939104412,"f","BSHP","B","FAIR","2018","$50.2M"],[40.6881537099,-73.8488917742,"f","WOODHAVEN BLVD","Q","FAIR","2018","$89.2M"],[40.6145281662,-73.98256593,"f","65TH ST","B","FAIR","2018","$54.0M"],[40.6130961187,-73.9821371602,"f","BAY PKWY","B","FAIR","2018","$75.6M"],[40.6227851502,-73.9939370226,"f","16TH AVE","B","FAIR","2018","$30.7M"],[40.7576130658,-73.9985468819,"f","W 38TH ST","M","FAIR","2018","$27.9M"],[40.75815994,-73.9979590222,"f","W 39TH ST","M","FAIR","2018","$28.4M"],[40.7643263477,-73.9929178807,"f","W 49TH ST","M","FAIR","2018","$18.4M"],[40.7655675375,-73.9919401074,"f","W 51ST ST","M","FAIR","2018","$19.4M"],[40.6213792429,-73.991539015,"e","17TH AVE","B","VGOOD","2018","$40.3M"],[40.6716398631,-73.8529540745,"f","RAMP TO LINDEN BLVD","Q","FAIR","2018","$15.1M"],[40.6660866786,-73.841578814,"f","CROSS BAY BLVD","Q","FAIR","2018","$111.1M"],[40.617393908,-73.9849668008,"e","20TH AVE","B","VGOOD","2018","$31.5M"],[40.7391927935,-73.9525889054,"f","PULASKI BRIDGE","B","FAIR","2018","$929.8M"],[40.7631023301,-73.8389672068,"f","N.BLVD WB TO 678I SB","Q","FAIR","2018","$38.7M"],[40.7108199603,-74.0021070514,"g","TO PEARL ST","M","GOOD","2018","$24.7M"],[40.6658383303,-73.7521330964,"g","225TH ST","Q","GOOD","2018","$31.4M"],[40.7143455719,-73.8310698482,"g","QUEENS BLVD","Q","GOOD","2018","$138.9M"],[40.7092996666,-74.0003819771,"g","PEARL ST TO FDR DR","M","GOOD","2018","$23.4M"],[40.7408413044,-73.940589579,"g","HUNTERS PT AVE","Q","GOOD","2018","$54.7M"],[40.6422463394,-74.0742907595,"e","BOROUGH PLACE - RAMP A","S","VGOOD","2018","$8.4M"],[40.8464651431,-73.9093601184,"f","GRAND CONCOURSE","B","FAIR","2018","$54.3M"],[40.6393898856,-73.9635592906,"e","DORCHESTER ROAD","B","VGOOD","2018","$22.6M"],[40.8660309669,-73.894363167,"f","GRAND CONCOURSE","B","FAIR","2018","$83.8M"],[40.8204719588,-73.9263825111,"f","GRAND CONCOURSE","B","FAIR","2018","$64.3M"],[40.7609115566,-73.9627305682,"g","TO E 62ND ST FROM QNS","M","GOOD","2018","$82.4M"],[40.6669091302,-73.8387666144,"g","S CONDUIT BLVD","Q","GOOD","2018","$71.0M"],[40.7809989104,-73.9870661074,"e","W72ND ST RAMP TO HHP NB","M","VGOOD","2018","$7.9M"],[40.7897538226,-73.8224339412,"g","WHITESTONE EXP NB","Q","GOOD","2018","$11.2M"],[40.80301812169,-73.9305991698,"e","HARLEM RIVER DRIVE SB","M","VGOOD","2018","$252.2M"],[40.8536263781,-73.9202040443,"f","W TREMONT AVE","B","FAIR","2018","$58.0M"],[40.59637345,-73.9789583586,"g","AVENUE U","B","GOOD","2018","$26.3M"],[40.7590362658,-73.958650817,"f","E 60TH ST","M","FAIR","2018","$103.5M"],[40.5924850531,-73.9782247644,"g","86TH ST","B","GOOD","2018","$54.8M"],[40.8620007515,-73.81584704,"f","SHORE ROAD","B","FAIR","2018","$197.3M"],[40.6717600304,-73.9587017833,"e","LINCOLN PLACE","B","VGOOD","2018","$11.1M"],[40.6700552827,-73.9594212473,"f","UNION ST","B","FAIR","2018","$18.4M"],[40.7633990224,-73.7518417352,"f","NORTHERN BLVD","Q","FAIR","2018","$37.1M"],[40.6691204687,-73.959615356,"f","PRESIDENT ST","B","FAIR","2018","$11.2M"],[40.7622837362,-73.7569675643,"g","NORTHERN BLVD","Q","GOOD","2018","$42.3M"],[40.6357174265,-73.9628947488,"g","NEWKIRK AVE","B","GOOD","2018","$18.4M"],[40.808598085,-73.9098216192,"e","ST. MARYS & CONCORD","B","VGOOD","2018","$11.7M"],[40.7689888196,-73.910766137,"e","STEINWAY ST","Q","VGOOD","2018","$23.5M"],[40.8080184126,-73.9089762274,"e","WALES AVE","B","VGOOD","2018","$11.4M"],[40.807397454,-73.908120334,"g","SOUTHERN BLVD","B","GOOD","2018","$17.6M"],[40.7692381069,-73.9104539962,"e","STEINWAY ST","Q","VGOOD","2018","$23.2M"],[40.7894008886,-73.7820409087,"f","BCIP","Q","FAIR","2018","$22.1M"],[40.8222164657,-73.9110205602,"g","THIRD AVE","B","GOOD","2018","$12.2M"],[40.8786006931,-73.9039367163,"g","W 231ST ST","B","GOOD","2018","$21.3M"],[40.8267921413,-73.9226789895,"e","GRAND CONCOURSE","B","VGOOD","2018","$122.8M"],[40.8345094396,-73.9177066679,"g","GRAND CONCOURSE","B","GOOD","2018","$154.3M"],[40.670870285,-73.9589753276,"g","EASTERN PKWY","B","GOOD","2018","$34.6M"],[40.8214892139,-73.9111634463,"f","BROOKE AVE","B","FAIR","2018","$94.7M"],[40.6648539054,-73.9612420781,"e","WASHINGTON AVE","B","VGOOD","2018","$26.8M"],[40.6491719992,-73.9989447491,"e","7TH AVE","B","VGOOD","2018","$13.9M"],[40.8524286577,-73.9035673049,"g","GRAND CONCOURSE","B","GOOD","2018","$39.3M"],[40.7072244413,-74.0007555553,"f","FDR DR N.B. OFF RMP","M","FAIR","2018","$125.0M"],[40.7675840238,-73.9018708337,"g","49TH ST","Q","GOOD","2018","$28.6M"],[40.8067293024,-73.9072879602,"e","BRUCKNER BLVD","B","VGOOD","2018","$30.1M"],[40.8627144522,-73.9147553191,"g","W 207TH/W FORDHAM RD","B","GOOD","2018","$143.0M"],[40.6323203983,-74.0067425363,"e","FORT HAMILTON PKWY","B","VGOOD","2018","$56.9M"],[40.6517060491,-73.8657468904,"g","ERSKINE ST","U","GOOD","2018","$37.5M"],[40.6306179034,-74.0038598839,"e","11TH AVE","B","VGOOD","2018","$43.2M"],[40.900283786,-73.8864852068,"e","MOSHOLU PARKWAY","B","VGOOD","2018","$20.7M"],[40.8074848683,-73.9326496357,"g","THIRD AVE BRIDGE","B","GOOD","2018","$384.2M"],[40.7095977895,-74.0010310906,"f","TO FDR DR N.B.","M","FAIR","2018","$257.5M"],[40.6354066645,-74.0131931194,"f","7TH AVE","B","FAIR","2018","$84.1M"],[40.7325697818,-73.8681629989,"f","ELIOT AVE","Q","FAIR","2018","$62.4M"],[40.6627954658,-73.9621700705,"e","FLATBUSH AVE","B","VGOOD","2018","$50.9M"],[40.7649615376,-73.9924545849,"f","W 50TH ST","M","FAIR","2018","$18.4M"],[40.7683990172,-73.990917872,"f","W 55TH ST","M","FAIR","2018","$19.4M"],[40.7662691668,-73.9917040116,"f","W 52ND ST","M","FAIR","2018","$19.4M"],[40.7691880226,-73.9908541538,"f","W 56TH ST","M","FAIR","2018","$19.8M"],[40.7708615766,-73.9906364237,"f","W 58TH ST","M","FAIR","2018","$17.3M"],[40.770051806,-73.9908175354,"f","W 57TH ST","M","FAIR","2018","$41.0M"],[40.6369107357,-74.0188665901,"f","5TH AVE","B","FAIR","2018","$56.1M"],[40.767648995,-73.9910630745,"f","W 54TH ST","M","FAIR","2018","$21.1M"],[40.766909259,-73.9912755083,"f","W 53RD ST","M","FAIR","2018","$22.9M"],[40.7610224185,-73.821780197,"f","PARSONS BLVD","Q","FAIR","2018","$18.1M"],[40.760383435,-73.8241112104,"f","BOWNE ST","Q","FAIR","2018","$22.4M"],[40.7625483335,-73.8161163632,"e","149TH ST","Q","VGOOD","2018","$21.2M"],[40.7690044809,-73.7483429705,"f","DOUGLASTON PKWY","Q","FAIR","2018","$28.6M"],[40.7338831789,-73.8835225324,"f","GRAND AVE","Q","FAIR","2018","$33.4M"],[40.7335309884,-73.870367074,"f","WOODHAVEN BLVD","Q","FAIR","2018","$51.7M"],[40.6295582665,-73.9570938508,"g","OCEAN AVE","B","GOOD","2018","$23.4M"],[40.6300249379,-73.9522817335,"f","BEDFORD AVE","B","FAIR","2018","$69.5M"],[40.5858373106,-73.9125529624,"e","BSHP","B","VGOOD","2018","$270.1M"],[40.628677392,-73.9658906731,"f","CONEY ISLAND AVE","B","FAIR","2018","$14.5M"],[40.6289245261,-73.9630302829,"f","E 14TH ST","B","FAIR","2018","$8.0M"],[40.7015131986,-73.9897431167,"f","278I W.B.  (B.Q.E.)","B","FAIR","2018","$20.2M"],[40.7015403241,-73.9897545437,"g","278I E.B.  (B.Q.E.)","B","GOOD","2018","$20.2M"],[40.7116751935,-74.0036654101,"g","TO PARK ROW","M","GOOD","2018","$74.6M"],[40.7102685228,-74.0025179041,"g","TO BKLN FRM FDR","M","GOOD","2018","$284.6M"],[40.7441822104,-73.8949401476,"g","70TH ST","Q","GOOD","2018","$38.6M"],[40.7447348922,-73.8946763916,"e","41ST AVE","Q","VGOOD","2018","$38.0M"],[40.7587107408,-73.9973570483,"f","W 40TH ST","M","FAIR","2018","$42.3M"],[40.6305624753,-73.9474317182,"f","NOSTRAND AVE","B","FAIR","2018","$19.4M"],[40.7408228464,-73.8988851066,"g","QUEENS BLVD","Q","GOOD","2018","$1179.9M"],[40.7007574917,-73.9951139513,"g","COLUMBIA HEIGHTS","B","GOOD","2018","$54.4M"],[40.7409987519,-73.9019055973,"g","QUEENS BLVD","Q","GOOD","2018","$51.2M"],[40.7409365256,-73.9554190424,"g","JACKSON AVE","Q","GOOD","2018","$20.3M"],[40.8160868688,-73.9128777505,"e","WESTCHESTER AVE","B","VGOOD","2018","$13.5M"],[40.7573984383,-73.9538372625,"f","TO NY FROM 11TH ST","Q","FAIR","2018","$37.8M"],[40.7067383055,-73.8689705897,"g","80TH ST","Q","GOOD","2018","$51.9M"],[40.73402349588,-73.97484024235,"f","FDR DRIVE","M","FAIR","2018","$824.2M"],[40.7032311501,-73.8387111638,"e","PARK LANE SOUTH","Q","VGOOD","2018","$13.6M"],[40.6262089661,-73.9830619854,"f","18TH AVE","B","FAIR","2018","$27.0M"],[40.6263195602,-73.9822185082,"g","52ND ST","B","GOOD","2018","$14.8M"],[40.84230686,-73.8770462575,"f","E 180TH ST","B","FAIR","2018","$20.5M"],[40.5841729156,-73.9619342618,"e","GUIDER AV RAMP TO BSHP","B","VGOOD","2018","$48.7M"],[40.8733451238,-73.9065153848,"e","W 225TH ST","B","VGOOD","2018","$49.0M"],[40.6281400936,-73.9711881629,"g","OCEAN PKWY","B","GOOD","2018","$31.5M"],[40.7712501052,-73.9906749267,"f","11TH AVE","M","FAIR","2018","$69.3M"],[40.6272606309,-73.9764660546,"f","MCDONALD AVE","B","FAIR","2018","$13.4M"],[40.7592779286,-73.9967139143,"f","W 41ST ST","M","FAIR","2018","$28.1M"],[40.6402990522,-74.0260292826,"f","2ND AVE","B","FAIR","2018","$80.2M"],[40.6824720441,-73.973889859,"f","6TH AVE","B","FAIR","2018","$55.2M"],[40.8141457436,-73.9331125361,"f","MADISON AVE BRIDGE","B","FAIR","2018","$360.0M"],[40.6259636575,-73.9969583391,"g","NEW UTRECHT AVE","B","GOOD","2018","$10.9M"],[40.5154357399,-74.2455503393,"c","TRACY AVE PED BRDG","S","CLOSED","2018","$2.9M"],[40.6255895563,-73.9946710312,"f","15TH AVE","B","FAIR","2018","$16.3M"],[40.6668635192,-73.9014111875,"f","BLAKE AVE","B","FAIR","2018","$22.1M"],[40.6265362217,-73.997396633,"g","14TH AVE","B","GOOD","2018","$21.6M"],[40.5176869386,-74.2390998656,"c","BETHEL AV PED BRDG","S","CLOSED","2018","$5.2M"],[40.8526634336,-73.9214285077,"f","MATTHEWSON ROAD","B","FAIR","2018","$67.0M"],[40.8289655019,-73.8427107897,"f","BRUCKNER EXPWY SVC RD","B","FAIR","2018","$157.5M"],[40.7464340154,-73.9401485619,"f","TO THOMSON AVE FROM NY","Q","FAIR","2018","$265.9M"],[40.6564276054,-73.9683385748,"f","HILL DR (TERRACE BRDG)","B","FAIR","2018","$34.8M"],[40.6721203031,-73.9028438915,"g","GLENMORE AVE","B","GOOD","2018","$25.5M"],[40.6734372199,-73.9031156379,"g","LIBERTY AVE","B","GOOD","2018","$30.2M"],[40.7081170562,-73.9999383599,"f","STH ST RMP TO FDR S.B.","M","FAIR","2018","$48.0M"],[40.67091376,-73.90246809,"g","PITKIN AVE","B","GOOD","2018","$24.6M"],[40.6684081226,-73.9018472462,"g","SUTTER AVE","B","GOOD","2018","$25.2M"],[40.8016850847,-73.9299958455,"e","RAMP FROM FDR DRIVE","M","VGOOD","2018","$113.5M"],[40.6258154861,-73.9869293568,"f","17TH AVE","B","FAIR","2018","$15.3M"],[40.6253984035,-73.991296682,"f","16TH AVE","B","FAIR","2018","$24.3M"],[40.7628239905,-73.8369291174,"f","NORTHERN BLVD WB","Q","FAIR","2018","$323.6M"],[40.7626022212,-73.8369630216,"f","NORTHERN BLVD EB","Q","FAIR","2018","$355.0M"],[40.8724645082,-73.8439526656,"f","EASTCHESTER ROAD","B","FAIR","2018","$60.8M"],[40.77674,-73.98889,"e","W 66TH ST","M","VGOOD","2018","$20.2M"],[40.77521,-73.98945,"e","W 64TH ST","M","VGOOD","2018","$23.4M"],[40.7705747651,-73.9175179121,"g","31ST ST","Q","GOOD","2018","$44.8M"],[40.7601425795,-73.9574532914,"e","FDR DRIVE SB","M","VGOOD","2018","$296.2M"],[40.8702276874,-73.8457814793,"e","GUN HILL ROAD","B","VGOOD","2018","$33.8M"],[40.6221136115,-73.8965517243,"e","BSHP EB","B","VGOOD","2018","$370.4M"],[40.8737906992,-73.8901579291,"f","BEDFORD PARK BLVD","B","FAIR","2018","$177.9M"],[40.8766779216,-73.8889888793,"e","W 205TH ST","B","VGOOD","2018","$146.3M"],[40.6304831687,-73.8859638513,"e","BSHP","B","VGOOD","2018","$46.7M"],[40.7254552698,-73.8961746255,"f","GRAND AVE","Q","FAIR","2018","$57.8M"],[40.751552526,-73.9429876913,"f","TO 21ST ST FROM NY","Q","FAIR","2018","$216.4M"],[40.51722905,-74.2406794101,"f","ARTHUR KILL ROAD","S","FAIR","2018","$16.6M"],[40.7487573051,-73.896278301,"g","BROADWAY / 37TH AVE","Q","GOOD","2018","$72.0M"],[40.5516497514,-74.1505241644,"g","GIFFORDS LANE","S","GOOD","2018","$13.7M"],[40.6038113964,-74.0835602147,"g","CLOVE ROAD","S","GOOD","2018","$23.6M"],[40.6168968183,-74.0745640972,"g","TOMPKINS AVE","S","GOOD","2018","$24.1M"],[40.6803119117,-73.874919137,"g","CONDUIT BLVD NB","B","GOOD","2018","$17.4M"],[40.6362253176,-74.0747643049,"f","HANNAH ST","S","FAIR","2018","$60.1M"],[40.7133035622,-73.9712021958,"f","WILLIAMSBURG BRIDGE","B","FAIR","2018","$3708.0M"],[40.6335503149,-74.16628019215,"e","SOUTH AVE","S","VGOOD","2018","$38.2M"],[40.7165101925,-73.9227167929,"f","GRAND ST BRIDGE","B","FAIR","2018","$23.3M"],[40.8467713774,-73.9278810946,"g","WASHINGTON BRIDGE","B","GOOD","2018","$577.5M"],[40.8035951584,-73.9293619865,"e","WILLIS AVE BRIDGE","B","VGOOD","2018","$770.0M"],[40.7116358513,-73.9784397457,"f","CORLEARS PARK ROAD","M","FAIR","2018","$18.5M"],[40.6429452745,-74.075069435,"g","BUS STATION EXIT RAMP","S","GOOD","2018","$126.8M"],[40.6411407169,-74.0740068405,"g","BUS STATION SOUTH","S","GOOD","2018","$697.6M"],[40.6429174718,-74.0733805076,"e","PARKING EXIT RAMP","S","VGOOD","2018","$93.5M"],[40.6423397197,-74.0746478482,"e","PARKING ENTR RAMP","S","VGOOD","2018","$38.7M"],[40.6435947174,-74.0726084557,"e","BUS STATION NORTH","S","VGOOD","2018","$292.3M"],[40.9057969207,-73.855659891,"f","E 241ST ST","B","FAIR","2018","$222.8M"],[40.8700360529,-73.8127655117,"e","SHORE RD CIRCLE","B","VGOOD","2018","$36.5M"],[40.8353944423,-73.8820747274,"f","E 174TH ST","B","FAIR","2018","$206.7M"],[40.8376204626,-73.8753791046,"g","E 177TH ST","B","GOOD","2018","$74.7M"],[40.8232096378,-73.9216980915,"f","E 156TH ST","B","FAIR","2018","$228.7M"],[40.7055658787,-73.9961375898,"f","BROOKLYN BRIDGE","B","FAIR","2018","$2267.0M"],[40.7152070233,-73.887390943,"g","69TH STREET","Q","GOOD","2018","$27.8M"],[40.7247606236,-73.8847868352,"g","CALDWELL AVE","Q","GOOD","2018","$10.0M"],[40.8579545541,-73.8307245459,"g","HUTCHINSON RVR PKWY","B","GOOD","2018","$69.5M"],[40.8456265105,-73.8474236684,"g","WILLIAMSBRIDGE RD","B","GOOD","2018","$29.3M"],[40.868450242,-73.8215404992,"f","HUTCHINSON RVR PKWY","B","FAIR","2018","$270.9M"],[40.8418200036,-73.8642461023,"g","UNIONPORT ROAD","B","GOOD","2018","$34.7M"],[40.7794963337,-73.9729466878,"f","W77 ST PED (LADIES POND BRDG)","M","FAIR","2018","$2.2M"],[40.7518140189,-73.9444706113,"f","TO NY FROM 21ST ST","Q","FAIR","2018","$285.1M"],[40.8417045893,-73.8647556948,"f","WHITE PLAINS ROAD","B","FAIR","2018","$46.1M"],[40.8395939467,-73.8701865522,"f","E TREMONT AVE","B","FAIR","2018","$100.3M"],[40.8223703716,-73.8868670918,"g","BRUCKNER EXPWY SB","B","GOOD","2018","$52.2M"],[40.8225933958,-73.8868133209,"g","BRUCKNER EXPWY NB","B","GOOD","2018","$49.0M"],[40.8281758066,-73.8850713393,"g","WESTCHESTER AVE","B","GOOD","2018","$70.2M"],[40.7455535365,-73.9389665842,"g","THOMPSON AVE","Q","GOOD","2018","$275.8M"],[40.8214802046,-73.8877664381,"e","BRYANT AVE","B","VGOOD","2018","$18.3M"],[40.7567170318,-73.953901872,"f","QUEENSBORO BRIDGE (UL)","M","FAIR","2018","$1450.3M"],[40.7421521331,-73.947185049,"f","49TH AVE","Q","FAIR","2018","$91.8M"],[40.74678656,-73.9350887365,"g","QUEENS BLVD","Q","GOOD","2018","$415.8M"],[40.8208600732,-73.8885200922,"e","FAILE ST","B","VGOOD","2018","$27.9M"],[40.8197243351,-73.8900858195,"g","HUNTS POINT AVE","B","GOOD","2018","$45.2M"],[40.7566177969,-73.9541695872,"f","QUEENSBORO BRIDGE (LL)","M","FAIR","2018","$2821.1M"],[40.8184896105,-73.8915893322,"g","BARRETTO ST","B","GOOD","2018","$23.9M"],[40.8161827351,-73.8939323399,"g","LAFAYETTE AVE","B","GOOD","2018","$54.5M"],[40.8153993679,-73.8947183545,"g","LONGWOOD AVE","B","GOOD","2018","$47.8M"],[40.7548342608,-74.002680095,"f","11TH AVE VIADUCT","M","FAIR","2018","$639.0M"],[40.8087172944,-73.9030142563,"g","E 149TH ST","B","GOOD","2018","$82.2M"],[40.7063620542,-73.9901593909,"f","MANHATTAN BRIDGE(UL)","B","FAIR","2018","$2643.4M"],[40.8564495612,-73.8353793645,"g","BRONX PELHAM PKWY","B","GOOD","2018","$110.7M"],[40.8125362538,-73.8970087916,"g","LEGGETT AVE","B","GOOD","2018","$187.0M"],[40.7564474525,-74.0014958794,"f","W 35TH ST","M","FAIR","2018","$29.2M"],[40.7485305548,-73.9377765834,"f","TO NY FR THOMSON AVE","Q","FAIR","2018","$470.7M"],[40.7807562265,-73.9866814218,"f","HHP VIADUCT","M","FAIR","2018","$960.0M"],[40.7872692,-73.952055447,"e","E 97TH ST","M","VGOOD","2018","$14.4M"],[40.836572303,-73.9490673453,"f","HHP","M","FAIR","2018","$630.0M"],[40.7066600447,-73.9902071859,"f","MANHATTAN BRIDGE(LL)","B","FAIR","2018","$2773.8M"],[40.7515072044,-73.9976440391,"f","W 31ST ST","M","FAIR","2018","$39.6M"],[40.7599199167,-73.9961561063,"f","W 42ND ST","M","FAIR","2018","$46.4M"],[40.8567168017,-73.9326256822,"f","W191ST ST PED","M","FAIR","2019","$9.0M"],[40.6847609741,-73.8911993293,"g","HIGHLAND PK PED.","Q","GOOD","2019","$8.6M"],[40.796431648,-73.9759965873,"f","HHP","M","FAIR","2019","$407.5M"],[40.5877673503,-73.9915003897,"f","27TH AVE PED BRDG","B","FAIR","2019","$9.4M"],[40.7508445829,-73.8323675875,"f","FLSHG MDW PK PED","Q","FAIR","2019","$37.8M"],[40.6295661869,-74.0400564362,"f","81ST ST PED BRDG","B","FAIR","2019","$13.9M"],[40.59604,-74.16875,"e","SPRINGVILLE GREENWAY PED","S","VGOOD","2019","$1.2M"],[40.873590207,-73.9197694453,"f","ISHAM PK PED BRDG","M","FAIR","2019","$1.4M"],[40.8477607128,-73.9425400993,"f","W 176TH ST PED BRDG","M","FAIR","2019","$5.4M"],[40.8521871663,-73.9422593414,"f","W 181ST ST PED BRDG","M","FAIR","2019","$6.8M"],[40.63406066001,-74.1508946286,"f","LAKE AVE","S","FAIR","2019","$26.6M"],[40.8353277415,-73.8817714743,"f","174TH ST-STH PED BRDG","B","FAIR","2019","$8.6M"],[40.8354632116,-73.8822227714,"f","174TH ST-NTH PED BRDG","B","FAIR","2019","$8.1M"],[40.6873070421,-73.9998784369,"g","KANE ST","B","GOOD","2019","$22.5M"],[40.6434029148,-74.0720080903,"g","SI FERRY PED BRDG","S","GOOD","2019","$13.1M"],[40.7666348467,-73.97284406,"f","EAST DR (INSCOPE ARCH)","M","FAIR","2019","$6.8M"],[40.86085661,-73.9324818194,"g","MARGARET CORBIN DR","M","GOOD","2019","$2.7M"],[40.6343502417,-74.1480194825,"e","GRANITE AVE","S","VGOOD","2019","$32.9M"],[40.634028484,-74.1518911202,"g","SIMONSON AVE","S","GOOD","2019","$26.2M"],[40.6339304272,-74.1550256842,"g","VAN PELT AVE","S","GOOD","2019","$22.5M"],[40.6712330365,-73.9700875644,"g","WEST DR (MEADOWPORT ARCH)","B","GOOD","2019","$11.2M"],[40.796015448,-73.9750282362,"e","RIVERSIDE DRIVE","M","VGOOD","2019","$47.7M"],[40.6617582032,-73.9662113249,"g","WEST FT BRDG (MUSIC GROVE  BRD","B","GOOD","2019","$1.4M"],[40.6338635984,-74.1570329519,"g","DE HART AVE","S","GOOD","2019","$30.1M"],[40.6660629156,-73.9671280415,"e","EAST DRIVE","B","VGOOD","2019","$9.0M"],[40.7849457779,-73.9847780489,"f","79 ST RAMP TO HHP","M","FAIR","2019","$13.1M"],[40.7753389887,-73.9662878732,"f","E77 ST PED (GLADE ARCH)","M","FAIR","2019","$22.5M"],[40.6338461486,-74.1580879868,"f","UNION AVE","S","FAIR","2019","$29.8M"],[40.7862283045,-73.9839742973,"f","SB HHP RAMP TO 79 ST","M","FAIR","2019","$13.2M"],[40.7329863698,-73.7467270488,"f","SPRINGFIELD BLVD","Q","FAIR","2019","$7.3M"],[40.8341259601,-73.9489272589,"g","RIVERSIDE DRIVE","M","GOOD","2019","$15.9M"],[40.6081446528,-74.1886219791,"e","CHELSEA ROAD","S","VGOOD","2019","$9.9M"],[40.5200400773,-74.2398148049,"f","ARTHUR KILL ROAD","S","FAIR","2019","$7.0M"],[40.8270596471,-73.9520112474,"e","RIVERSIDE DRIVE","M","VGOOD","2019","$26.7M"],[40.770125925,-73.9712889861,"f","EAST DR (WILLOWDELL ARCH)","M","FAIR","2019","$3.0M"],[40.7298025182,-73.7686181349,"f","FRANCIS LEWIS BLVD","Q","FAIR","2019","$32.3M"],[40.7853558906,-73.9849103494,"f","79 ST RAMP TO GAR","M","FAIR","2019","$53.2M"],[40.756919899,-74.0045701769,"g","W 34TH ST","M","GOOD","2019","$53.1M"],[40.6802627225,-73.8959870012,"g","HIGHLAND BLVD NB","B","GOOD","2019","$18.0M"],[40.8205879419,-73.9584286019,"e","W 134 ST","M","VGOOD","2019","$33.8M"],[40.6741239177,-73.9888225665,"e","THIRD AVE","B","VGOOD","2019","$16.9M"],[40.6761004051,-73.9901484515,"g","THIRD ST","B","GOOD","2019","$22.9M"],[40.5774462437,-74.0840600773,"g","SLATER BLVD","S","GOOD","2019","$9.2M"],[40.6339932279,-74.1532872135,"g","VAN NAME AVE","S","GOOD","2019","$24.6M"],[40.6397959308,-74.0265981431,"e","RIDGE BLVD","B","VGOOD","2019","$19.9M"],[40.6383365777,-74.0244861332,"e","3RD AVE","B","VGOOD","2019","$19.6M"],[40.6545521652,-73.9764232514,"f","SEELEY ST","B","FAIR","2019","$38.2M"],[40.7685869636,-73.9047870205,"f","ASTORIA BLVD EB","Q","FAIR","2019","$36.9M"],[40.7861307211,-73.984560298,"g","GAR RAMP TO 79 ST","M","GOOD","2019","$40.9M"],[40.6433163553,-73.8761819284,"g","PENNSYLVANIA AVE","B","GOOD","2019","$29.9M"],[40.8625991336,-73.9329564755,"f","MARGARET CORBIN DR","M","FAIR","2019","$4.0M"],[40.7595850297,-73.9013831491,"e","278I (BQE WEST LEG)","Q","VGOOD","2019","$27.9M"],[40.6037395057,-74.0191218921,"e","BAY 8TH ST","B","VGOOD","2019","$22.3M"],[40.7790656255,-73.96554618,"f","EAST DR (GREYWACKE ARCH)","M","FAIR","2019","$5.7M"],[40.8802593827,-73.9025759976,"g","W 233RD ST","B","GOOD","2019","$16.9M"],[40.8811316041,-73.9018035031,"g","W 234TH ST","B","GOOD","2019","$17.0M"],[40.6046575586,-73.8986923941,"g","BSHP EB","B","GOOD","2019","$860.8M"],[40.7595920228,-73.9015271144,"e","278I (BQE EAST LEG)","Q","VGOOD","2019","$31.8M"],[40.876653083,-73.904959715,"e","W 230TH ST","B","VGOOD","2019","$26.6M"],[40.7538129356,-73.9757476561,"g","PARK AVE N.B","M","GOOD","2019","$11.1M"],[40.7542700714,-73.9767633735,"g","PARK AVE S.B.","M","GOOD","2019","$10.7M"],[40.582713699,-73.9825591118,"e","STILLWELL AVE","B","VGOOD","2019","$76.5M"],[40.6187049751,-73.9871501495,"f","19TH AVE","B","FAIR","2019","$21.6M"],[40.6688667724,-73.9691643548,"f","EAST DR (ENDALE ARCH)","B","FAIR","2019","$6.9M"],[40.7895029788,-73.8225067677,"f","678I SB TO BCIP EB","Q","FAIR","2019","$10.4M"],[40.6157652543,-73.9831354407,"f","21ST AVE","B","FAIR","2019","$96.1M"],[40.7365098995,-73.7561900136,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$11.9M"],[40.6226880942,-74.118440832,"f","MARTLINGS AVE","S","FAIR","2019","$31.5M"],[40.5665306133,-74.1696778982,"g","RICHMOND AVE","S","GOOD","2019","$146.7M"],[40.6199985552,-73.9892071082,"e","18TH AVE","B","VGOOD","2019","$23.4M"],[40.7669763253,-73.973780218,"f","E 62 ST PED BRDG (GAPSTOW BRDG","M","FAIR","2019","$6.3M"],[40.7318904945,-73.8712304325,"f","495I  (2066000)","Q","FAIR","2019","$113.4M"],[40.6529161885,-73.9621955335,"f","CROOKE AVE","B","FAIR","2019","$27.0M"],[40.7860792247,-73.9370238537,"g","WARDS ISLAND PED BRDG","M","GOOD","2019","$87.8M"],[40.6740913694,-73.9964649409,"g","NINTH ST BRIDGE","B","GOOD","2019","$26.2M"],[40.8893547284,-73.9087572538,"g","W 239TH ST","B","GOOD","2019","$27.4M"],[40.7577114516,-73.900519984,"g","278I SB (BQE WEST LEG)","Q","GOOD","2019","$23.6M"],[40.75766785,-73.9009528587,"e","278I SB (BQE EAST LEG)","Q","VGOOD","2019","$19.0M"],[40.8912051852,-73.90794017,"e","MANHATTAN COLL PKWY","B","VGOOD","2019","$27.9M"],[40.7757670962,-73.9717735146,"f","73 ST PED BRDG (BOW BRIDGE)","M","FAIR","2019","$7.7M"],[40.6819384606,-74.0024517231,"f","SUMMIT ST PED BRDG","B","FAIR","2019","$6.3M"],[40.6550255364,-73.9615662156,"f","PARKSIDE AVE - OCEAN AVE","B","FAIR","2019","$219.2M"],[40.7858791655,-73.9843868929,"f","79 ST PED PLAZA","M","FAIR","2019","$131.6M"],[40.7848409239,-73.9836841453,"f","HHP ON/OFF RMP-79TH ST SO. SID","M","FAIR","2019","$3.8M"],[40.6584488035,-73.9651657189,"f","HILL DR (CLEFT RIDGE SPAN)","B","FAIR","2019","$3.4M"],[40.7787046529,-73.7682817766,"f","28TH AVE PED BRDG","Q","FAIR","2019","$34.2M"],[40.7857151338,-73.9830593799,"f","HHP ON/OFF RMP-79TH ST NO. SID","M","FAIR","2019","$3.8M"],[40.73353855,-73.7712696763,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$12.6M"],[40.7790061461,-73.9713395804,"g","W77 ST PED (OAK BRDG)","M","GOOD","2019","$4.5M"],[40.5959734287,-73.9999557567,"f","BSHP","B","FAIR","2019","$32.4M"],[40.5827616769,-73.9482583336,"g","OCEAN AVE PED BRDG","B","GOOD","2019","$20.0M"],[40.6758888282,-73.9024683002,"g","ATLNTC AV SVC RD W.B.","B","GOOD","2019","$25.2M"],[40.675579099,-73.9025111274,"e","ATLNTC AV SVC RD E.B.","B","VGOOD","2019","$14.4M"],[40.617942549,-74.1086250374,"f","WEST FOOTBRIDGE","S","FAIR","2019","$4.0M"],[40.6516774151,-73.9625694981,"f","CATON AVE","B","FAIR","2019","$93.6M"],[40.6492441828,-73.9633484715,"f","E 18TH ST - CHURCH AVE","B","FAIR","2019","$81.9M"],[40.7562023754,-73.8998856321,"g","278I SB  (BQE EAST LEG)","Q","GOOD","2019","$94.0M"],[40.7577926862,-73.8997297511,"g","31ST AVE","Q","GOOD","2019","$26.4M"],[40.6198635602,-74.1118750087,"f","BRIDGE OVER DAM","S","FAIR","2019","$4.5M"],[40.6180824777,-74.1079890313,"f","EAST FOOTBRIDGE","S","FAIR","2019","$4.0M"],[40.7010299913,-73.988688227,"f","278I W.B.  (B.Q.E.)","B","FAIR","2019","$47.2M"],[40.772339139,-73.7640712028,"f","CROCHERON PK PED","Q","FAIR","2019","$10.3M"],[40.5713562345,-73.8692952216,"f","BEACH CHANNEL DR WB","Q","FAIR","2019","$16.2M"],[40.660605976,-73.9662234047,"f","PED NR BOATHSE (LULLWATER BRDG","B","FAIR","2019","$4.5M"],[40.834162672,-73.9495522088,"c","W 155TH ST PED BRDG","M","CLOSED","2019","$3.6M"],[40.8358,-73.88104,"e","STARLIGHT PARK PED BRDG","B","VGOOD","2019","$8.6M"],[40.8292205174,-73.9510965581,"f","W 148TH ST PED BRDG","M","FAIR","2019","$5.0M"],[40.79777,-73.91634,"g","RANDALL'S ISLAND CONN. PED","B","GOOD","2019","$13.7M"],[40.900679662,-73.9058008073,"g","RIVERDALE AVE","B","GOOD","2019","$23.4M"],[40.9012434226,-73.9018752942,"e","FIELDSTON ROAD","B","VGOOD","2019","$29.7M"],[40.6079179824,-73.9811910327,"e","AVENUE P","B","VGOOD","2019","$24.9M"],[40.8806066017,-73.9182169122,"g","HHP","B","GOOD","2019","$22.6M"],[40.85153990368,-73.943877909,"p","FT WASHTN PARK RD","M","POOR","2019","$6.3M"],[40.7006901952,-73.9886900493,"f","278I E.B.  (B.Q.E.)","B","FAIR","2019","$92.4M"],[40.7189174175,-73.9749882085,"e","HOUSTON ST","M","VGOOD","2019","$50.3M"],[40.6243353966,-73.9959600639,"e","15TH AVE","B","VGOOD","2019","$48.9M"],[40.8474413573,-73.9460380765,"f","W 173RD ST PED BRDG","M","FAIR","2019","$6.8M"],[40.6957919023,-73.9983066945,"g","278I W.B.  (B.Q.E.)","B","GOOD","2019","$55.1M"],[40.6959063386,-73.9979426574,"g","278I E.B.  (B.Q.E.)","B","GOOD","2019","$42.1M"],[40.8846560874,-73.91468107,"e","W 232ND ST","B","VGOOD","2019","$22.1M"],[40.6051776482,-73.9806564852,"e","KINGS HIGHWAY","B","VGOOD","2019","$22.6M"],[40.7381356216,-73.7378995303,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$4.5M"],[40.7240791984,-73.9733108502,"f","E 10TH ST PED BRDG","M","FAIR","2019","$12.4M"],[40.6104546636,-73.9815773945,"e","AVENUE O","B","VGOOD","2019","$21.0M"],[40.6010017422,-73.9798086903,"e","AVENUE S","B","VGOOD","2019","$24.1M"],[40.76591809026,-73.95159803416,"f","E 72ND ST","M","FAIR","2019","$6.4M"],[40.5985553002,-73.979314546,"e","AVENUE T","B","VGOOD","2019","$24.1M"],[40.644344136,-73.9644537541,"f","BEVERLY ROAD","B","FAIR","2019","$19.6M"],[40.6341923198,-73.962599075,"f","FOSTER AVE","B","FAIR","2019","$13.5M"],[40.7007676834,-73.8509702701,"f","FOREST PARK DRIVE","Q","FAIR","2019","$45.0M"],[40.7714145749,-73.9462720393,"f","PROMENADE OVER FDR","M","FAIR","2019","$418.5M"],[40.8032642432,-73.9165971488,"f","278I","B","FAIR","2019","$164.1M"],[40.8797437364,-73.8846586179,"g","JEROME AVE","B","GOOD","2019","$53.1M"],[40.781316383,-73.9862145878,"f","PED BR AT W 73RD ST","M","FAIR","2019","$16.6M"],[40.8689879578,-73.9314480327,"f","INWOOD HILL PK FTBR","M","FAIR","2019","$3.1M"],[40.6664492275,-73.9606267016,"e","MONTGOMERY ST","B","VGOOD","2019","$10.1M"],[40.6307719751,-73.9454807537,"f","FLATBUSH AVE","B","FAIR","2019","$26.5M"],[40.667369598,-73.9602765442,"e","CROWN ST","B","VGOOD","2019","$18.3M"],[40.9002933833,-73.8970040272,"g","HHP","B","GOOD","2019","$33.8M"],[40.6361585331,-74.016026756,"e","6TH AVE","B","VGOOD","2019","$64.7M"],[40.6344645296,-74.0105226781,"e","8TH AVE","B","VGOOD","2019","$48.8M"],[40.6734946131,-73.9580414173,"e","STERLING PLACE","B","VGOOD","2019","$10.3M"],[40.7535602976,-73.9633248916,"f","E 51ST ST PED BRDG","M","FAIR","2019","$12.6M"],[40.6725766603,-73.9584252285,"e","ST JOHNS PLACE","B","VGOOD","2019","$10.3M"],[40.7792288029,-73.9692722265,"f","79 TH ST PED BRDG","M","FAIR","2019","$26.6M"],[40.8540652988,-73.8718644663,"f","BRONX RIVER PKWY","B","FAIR","2019","$30.0M"],[40.7778650757,-73.9650631041,"f","PED PATH OPP E79 ST","M","FAIR","2019","$16.6M"],[40.7369648378,-73.9747376964,"f","E 25TH ST PED BRDG","M","FAIR","2019","$7.7M"],[40.8282044653,-73.8369511578,"g","BE NB SERVICE RD","B","GOOD","2019","$35.1M"],[40.6463138865,-73.9947099882,"f","9TH AVE","B","FAIR","2019","$29.2M"],[40.7253355256,-73.8948884984,"g","69TH STREET","Q","GOOD","2019","$46.5M"],[40.7524211648,-73.8975687532,"g","278I  (B.Q.E.)","Q","GOOD","2019","$35.1M"],[40.64649166,-73.9945616472,"e","9TH AVE","B","VGOOD","2019","$55.8M"],[40.7406307622,-73.7282774882,"g","UNION TPKE","Q","GOOD","2019","$15.8M"],[40.6531406533,-74.0056235823,"e","4TH AVE","B","VGOOD","2019","$20.0M"],[40.8936056208,-73.9079701561,"g","W 246TH ST","B","GOOD","2019","$25.2M"],[40.8874438203,-73.824563261,"f","BOSTON ROAD","B","FAIR","2019","$430.6M"],[40.5850726156,-73.9542470424,"f","E 14 ST PED BRDG","B","FAIR","2019","$21.1M"],[40.6455210715,-73.7484197871,"f","ROCKAWAY BLVD","Q","FAIR","2019","$27.0M"],[40.7102393778,-74.0023754626,"f","PEARL ST TO BKLN","M","FAIR","2019","$28.6M"],[40.76931019,-73.9788419016,"f","W 62 ST PED BRDG (PINEBANK ARC","M","FAIR","2019","$4.5M"],[40.7117686901,-74.0044399404,"g","PARK ROW TO BKLN","M","GOOD","2019","$41.9M"],[40.6279370978,-73.9994348556,"g","13TH AVE","B","GOOD","2019","$72.0M"],[40.6794766752,-73.9883437867,"f","UNION ST","B","FAIR","2019","$22.1M"],[40.7390718757,-73.9428218171,"f","BORDEN AVE","Q","FAIR","2019","$37.8M"],[40.6376539606,-74.0217390268,"f","4TH AVE","B","FAIR","2019","$62.3M"],[40.7216260239,-73.9747708696,"f","E 6TH ST PED BRDG","M","FAIR","2019","$9.9M"],[40.714483324,-73.9766421553,"f","DELANCEY ST PED BRDG","M","FAIR","2019","$15.3M"],[40.7287304922,-73.8342291925,"f","MEADOW LAKE BRIDGE","Q","FAIR","2019","$18.7M"],[40.8181802174,-73.9601541887,"f","RIVERSIDE DRIVE","M","FAIR","2019","$667.4M"],[40.7614343215,-73.7991247899,"f","167TH ST PED BRDG","Q","FAIR","2019","$3.8M"],[40.7387399228,-73.8382375439,"f","BOATHOUSE BRIDGE","Q","FAIR","2019","$28.4M"],[40.7439864562,-73.8706844075,"f","94TH ST PED BRDG","Q","FAIR","2019","$4.1M"],[40.7441132592,-73.8384517035,"f","MERIDIAN ROAD","Q","FAIR","2019","$18.9M"],[40.7177675659,-73.9096928966,"f","RUST ST","Q","FAIR","2019","$13.2M"],[40.7175995466,-73.9100192151,"f","SERVICE RD TURNAROUND","Q","FAIR","2019","$13.2M"],[40.7528525206,-73.8515847629,"f","ROOSEVELT AVE","Q","FAIR","2019","$32.8M"],[40.7166509426,-73.9113095412,"f","FLUSHING AV SERVICE RD","Q","FAIR","2019","$13.2M"],[40.6605353867,-73.9643005366,"f","EAST DR (EAST WOOD ARCH)","B","FAIR","2019","$4.8M"],[40.6352420445,-73.7399195941,"g","ROCKAWAY BLVD","Q","GOOD","2019","$82.4M"],[40.714294066,-73.9312089819,"g","METROPOLITAN AVE","B","GOOD","2019","$47.5M"],[40.6561852315,-73.8304435787,"e","102ND ST","Q","VGOOD","2019","$22.1M"],[40.8194788627,-73.9330669482,"e","145TH ST BRIDGE","B","VGOOD","2019","$255.2M"],[40.7234942099,-73.8558863518,"f","67 AVE PED BR (2247200)","Q","FAIR","2019","$5.8M"],[40.7062764617,-73.8562343824,"f","PED BRG NEAR UNION TPK","Q","FAIR","2019","$6.8M"],[40.708344292,-73.8720547084,"g","71ST AVE","Q","GOOD","2019","$12.6M"],[40.8259279177,-73.9129249725,"e","MELROSE AVE","B","VGOOD","2019","$170.3M"],[40.7299137801,-73.8732176195,"f","60TH RD PED BRDG","Q","FAIR","2019","$5.4M"],[40.6413213797,-73.9639669846,"g","CORTELYOU ROAD","B","GOOD","2019","$21.6M"],[40.6944745775,-73.9800135294,"f","FLEET WALK PED BRDG","B","FAIR","2019","$2.8M"],[40.7325566984,-73.8801948835,"f","55TH AVE PED BRDG","Q","FAIR","2019","$5.8M"],[40.7020816551,-73.8506755423,"g","FOREST PARK DR","Q","GOOD","2019","$22.9M"],[40.6372877812,-73.9632133862,"e","DITMAS AVE","B","VGOOD","2019","$23.2M"],[40.6276054002,-73.9744148745,"e","E 3RD ST","B","VGOOD","2019","$8.3M"],[40.7413012436,-73.9500174147,"p","51 AVE PED BR (2247280)","Q","POOR","2019","$4.6M"],[40.7562471926,-73.8994912391,"e","278I SB  (BQE WEST LEG)","Q","VGOOD","2019","$23.6M"],[40.7379848898,-73.7483699628,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$13.1M"],[40.8282532172,-73.8838269337,"g","WESTCHESTER AVE","B","GOOD","2019","$24.7M"],[40.668757864,-73.8422435741,"g","CROSS BAY BLVD","Q","GOOD","2019","$71.3M"],[40.602125153,-74.0115266949,"f","17TH AVE PED BRDG","B","FAIR","2019","$9.4M"],[40.8870413681,-73.9120343944,"f","W 236TH ST PED BRDG","B","FAIR","2019","$11.2M"],[40.6674407812,-73.7711522915,"g","GUY R. BREWER BLVD","Q","GOOD","2019","$55.5M"],[40.6322465214,-73.9376113149,"e","ALBANY AVE - AVE H","B","VGOOD","2019","$157.9M"],[40.6758708815,-73.9039662692,"f","ATLANTIC AVE","B","FAIR","2019","$608.0M"],[40.7254573277,-73.7244057755,"f","BRADDOCK AVE","Q","FAIR","2019","$47.7M"],[40.7332877711,-73.940383877,"g","GREENPOINT AVE BRIDGE","B","GOOD","2019","$338.9M"],[40.7695634239,-73.974806294,"f","CENTER DR (PLAYMATES ARCH)","M","FAIR","2019","$5.1M"],[40.8746680862,-73.8864580145,"g","GRAND CONCOURSE","B","GOOD","2019","$41.7M"],[40.6312082248,-73.9416072779,"e","BROOKLYN AVE","B","VGOOD","2019","$20.6M"],[40.7505081296,-73.8971768731,"e","278I  (B.Q.E.)","Q","VGOOD","2019","$60.9M"],[40.8056495612,-73.9340385589,"f","E 128TH ST PED BRDG","M","FAIR","2019","$10.3M"],[40.625100057,-74.121209832,"f","FOOTBRIDGE","S","FAIR","2019","$3.6M"],[40.6266662918,-73.9798124122,"f","50TH ST","B","FAIR","2019","$30.5M"],[40.5724358833,-74.1186567096,"f","ROSS AVE","S","FAIR","2019","$17.1M"],[40.5713293221,-74.1200772229,"f","BEACH AVE","S","FAIR","2019","$17.1M"],[40.6253355646,-73.992758805,"e","60TH ST","B","VGOOD","2019","$17.9M"],[40.7860741851,-73.8023814171,"g","160TH ST","Q","GOOD","2019","$25.1M"],[40.5732064011,-74.1176220144,"f","ROSE AVE","S","FAIR","2019","$17.1M"],[40.7701471821,-73.9166626624,"f","32ND ST","Q","FAIR","2019","$36.5M"],[40.849406205,-73.9059795826,"g","GRAND CONCOURSE","B","GOOD","2019","$52.6M"],[40.6207381358,-74.0404368938,"f","92ND ST PED BRDG","B","FAIR","2019","$13.5M"],[40.5251432191,-74.2008030168,"g","SEGUINE AVE","S","GOOD","2019","$14.6M"],[40.6389278018,-74.023939126,"g","3RD AVE","B","GOOD","2019","$77.6M"],[40.7516723626,-73.7426574448,"g","W ALLEY ROAD","Q","GOOD","2019","$32.4M"],[40.8082047061,-73.9307989162,"e","FROM BRUCKNER BLVD","B","VGOOD","2019","$63.2M"],[40.5526682286,-74.1455745493,"g","GREAVES AVE","S","GOOD","2019","$11.9M"],[40.7488535268,-73.9674468466,"f","FDR NB E42ND TO E49TH ST","M","FAIR","2019","$111.4M"],[40.6338336403,-74.1603192695,"g","HARBOR ROAD","S","GOOD","2019","$26.4M"],[40.7171549667,-74.0128716367,"g","CHAMBERS ST PED BRDG","M","GOOD","2019","$33.7M"],[40.7723508777,-73.9941737577,"f","MILLER HWY - RTE 9A","M","FAIR","2019","$1226.1M"],[40.6823272628,-73.970716159,"g","CARLTON AVE","B","GOOD","2019","$69.3M"],[40.5197507157,-74.2286887573,"f","RICHMOND VALLEY ROAD","S","FAIR","2019","$42.5M"],[40.8997651268,-73.8912756868,"f","VAN CRTLDT EQUES","B","FAIR","2019","$9.4M"],[40.8995340441,-73.89328996,"f","VAN CRTLDT PARK","B","FAIR","2019","$17.6M"],[40.6290037855,-73.9620828302,"g","E 15TH ST PED BRDG","B","GOOD","2019","$4.0M"],[40.5740259668,-74.1164446535,"f","NEW DORP LANE","S","FAIR","2019","$34.2M"],[40.5774827309,-74.1116637425,"g","BANCROFT AVE","S","GOOD","2019","$26.9M"],[40.5795149471,-74.1089056027,"g","LINCOLN AVE","S","GOOD","2019","$20.2M"],[40.5806202826,-74.1073661941,"g","MIDLAND AVE","S","GOOD","2019","$13.3M"],[40.7626272506,-73.8125233941,"e","MURRAY ST","Q","VGOOD","2019","$18.0M"],[40.75272617033,-73.84001940699,"f","MERIDIAN ROAD","Q","FAIR","2019","$29.2M"],[40.6016593817,-74.0851693548,"g","WEST FINGERBOARD RD","S","GOOD","2019","$23.8M"],[40.6717628487,-73.9983871082,"f","HAMILTON AVE BRIDGE","B","FAIR","2019","$32.9M"],[40.6534149388,-73.831719337,"f","163RD AVE PED BRDG","Q","FAIR","2019","$22.5M"],[40.6517409499,-74.0033864723,"f","5TH AVE","B","FAIR","2019","$16.2M"],[40.8441919992,-73.9314939674,"f","HRD RAMP TO GWB","M","FAIR","2019","$512.7M"],[40.5185494877,-74.2346308147,"g","PAGE AVE","S","GOOD","2019","$138.2M"],[40.5645707904,-74.1269804866,"f","GUYON AVE","S","FAIR","2019","$31.3M"],[40.5330752049,-74.1924261314,"f","HUGUENOT AVE","S","FAIR","2019","$29.3M"],[40.5390834609,-74.1836453137,"f","ALBEE AVE","S","FAIR","2019","$29.2M"],[40.7441696675,-73.9010748891,"f","WOODSIDE AVE","Q","FAIR","2019","$70.9M"],[40.7127127559,-73.9003735503,"g","METROPOLITAN AVE","Q","GOOD","2019","$92.9M"],[40.7464779263,-73.8949868154,"g","ROOSEVELT AVE","Q","GOOD","2019","$49.6M"],[40.7035815915,-73.8397510876,"g","FOREST PARK DRIVE","Q","GOOD","2019","$26.9M"],[40.7137887633,-73.9028802068,"g","ELIOT AVE","Q","GOOD","2019","$43.0M"],[40.7917043188,-73.935407196,"f","E 111TH ST PED BRDG","M","FAIR","2019","$19.1M"],[40.6997368427,-73.9962952739,"g","278I W.B.  (B.Q.E.)","B","GOOD","2019","$388.8M"],[40.714614783,-73.9057617624,"g","60TH ST","Q","GOOD","2019","$24.0M"],[40.5133779772,-74.2510015499,"f","MAIN ST PED BRDG","S","FAIR","2019","$1.8M"],[40.7155105359,-73.9072585814,"e","ANDREWS AVE","Q","VGOOD","2019","$8.0M"],[40.56524892,-74.1261562125,"f","CEDARVIEW AVE PED BRDG","S","FAIR","2019","$2.8M"],[40.5195415424,-74.2296412555,"f","RICHMOND VALLEY STA PED BRDG","S","FAIR","2019","$2.7M"],[40.5511930143,-74.1514819052,"f","NELSON AVE PED BRDG","S","FAIR","2019","$1.4M"],[40.8406810758,-73.8384280488,"f","E TREMONT AVE","B","FAIR","2019","$45.9M"],[40.7968970072,-73.9292858255,"f","E 120TH ST PED BRDG","M","FAIR","2019","$17.9M"],[40.7429730758,-73.8740998714,"e","91 PLACE (2247010)","Q","VGOOD","2019","$12.4M"],[40.5790020238,-74.109670781,"f","FREMONT AVE PED BRDG","S","FAIR","2019","$3.6M"],[40.7597934686,-73.8261571538,"g","UNION ST","Q","GOOD","2019","$14.3M"],[40.7822969938,-73.8881267037,"f","RIKERS ISLAND BRIDGE","Q","FAIR","2019","$825.4M"],[40.5813908376,-73.9859863318,"f","CROPSEY AVE SB","B","FAIR","2019","$42.3M"],[40.6377673199,-74.0749490406,"f","MINTHORNE ST PED BRDG","S","FAIR","2019","$27.0M"],[40.7619735547,-73.8182640379,"g","147TH ST","Q","GOOD","2019","$9.0M"],[40.5405266344,-74.17817234,"f","BELFIELD AVE PED BRDG","S","FAIR","2019","$1.8M"],[40.762671032,-73.8149057289,"g","149TH PLACE","Q","GOOD","2019","$19.4M"],[40.5814861841,-73.9857139602,"f","CROPSEY AVE NB","B","FAIR","2019","$42.3M"],[40.7867872439,-73.9387757325,"f","E 103RD ST PED BRDG","M","FAIR","2019","$30.6M"],[40.7634140276,-73.9456329339,"g","ROOSEVELT ISLAND BRDG","M","GOOD","2019","$178.9M"],[40.7626790662,-73.8139340815,"g","150TH ST","Q","GOOD","2019","$33.0M"],[40.7641677275,-73.7613207945,"g","221ST ST","Q","GOOD","2019","$27.2M"],[40.7627094883,-73.775508485,"g","CORPORAL KENNEDY ST","Q","GOOD","2019","$11.9M"],[40.7631521394,-73.7707834627,"g","BELL BLVD","Q","GOOD","2019","$19.4M"],[40.8074416844,-73.935146316,"f","E 129TH ST PED BRDG","M","FAIR","2019","$4.7M"],[40.7416099716,-73.8984364037,"g","65TH ST","Q","GOOD","2019","$29.7M"],[40.5846442959,-73.9601481018,"f","CONEY ISLAND AVE","B","FAIR","2019","$89.4M"],[40.7424112692,-73.8992932112,"g","65TH PLACE","Q","GOOD","2019","$37.7M"],[40.7571176558,-73.9992521002,"e","W 37TH ST","M","VGOOD","2019","$32.0M"],[40.6781751385,-73.9891975332,"f","CARROLL ST","B","FAIR","2019","$13.6M"],[40.7117500123,-73.8332667329,"g","80TH ROAD","Q","GOOD","2019","$18.4M"],[40.7817627559,-73.9624355839,"f","W86 ST PED (SW RESERVOIR BRDG)","M","FAIR","2019","$5.0M"],[40.8473657761,-73.8994973786,"g","E TREMONT AVE","B","GOOD","2019","$38.4M"],[40.710737662,-73.8319430101,"g","82ND AVE","Q","GOOD","2019","$18.4M"],[40.8249385435,-73.9164132319,"g","E 161ST ST","B","GOOD","2019","$29.9M"],[40.627409664,-74.122560096,"g","FOREST AVE","S","GOOD","2019","$7.2M"],[40.709038978,-73.830140222,"g","LEFFERTS BLVD","Q","GOOD","2019","$24.6M"],[40.765204172,-73.952050289,"f","E 71ST ST PED BRDG","M","FAIR","2019","$16.6M"],[40.805621708,-73.9251562283,"g","TO BRUCKNER BLVD","B","GOOD","2019","$90.0M"],[40.6220933866,-73.8968443918,"e","BSHP WB","B","VGOOD","2019","$226.5M"],[40.746573734,-73.8943013736,"g","ROOSEVELT AVE","Q","GOOD","2019","$33.2M"],[40.7449791245,-73.893227653,"g","41ST AVE","Q","GOOD","2019","$19.8M"],[40.7485351705,-73.8954736839,"g","37TH AVE","Q","GOOD","2019","$30.9M"],[40.5983842731,-74.1755945705,"f","TRAVIS AVE","S","FAIR","2019","$7.7M"],[40.784965109,-73.966781057,"g","E86 ST PED (SE RESERVOIR BRDG)","M","GOOD","2019","$3.1M"],[40.668243972,-73.9600323005,"g","CARROLL ST PED BRDG","B","GOOD","2019","$2.7M"],[40.8364641099,-73.9486686265,"g","W 158TH ST","M","GOOD","2019","$91.0M"],[40.7349146218,-73.7654218315,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$12.2M"],[40.6638379591,-73.9005747878,"f","LIVONIA AVE PED BRDG","B","FAIR","2019","$11.2M"],[40.8161730041,-73.9268570054,"g","E 144TH ST","B","GOOD","2019","$37.9M"],[40.7361646029,-73.7732303275,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$11.7M"],[40.6230070542,-74.118440832,"f","S OF BROOKS LAKE","S","FAIR","2019","$3.1M"],[40.6261837121,-74.1221823292,"f","FB S OF FOREST AV","S","FAIR","2019","$3.1M"],[40.7695601549,-73.9482965378,"e","E 78TH ST PED BRDG","M","VGOOD","2019","$23.5M"],[40.63559291,-74.1437916195,"g","JOHN ST PED BRDG","S","GOOD","2019","$4.7M"],[40.7429176914,-73.8920841938,"e","WOODSIDE AVE","Q","VGOOD","2019","$22.4M"],[40.7421746866,-73.8916346066,"e","43RD AVE","Q","VGOOD","2019","$17.6M"],[40.823360194,-73.9285289115,"f","RIVER AVE","B","FAIR","2019","$23.3M"],[40.6995335263,-73.9964021442,"f","278I E.B.  (B.Q.E.)","B","FAIR","2019","$601.7M"],[40.7413865315,-73.8911739351,"g","44TH AVE","Q","GOOD","2019","$17.5M"],[40.7306831366,-73.886132676,"g","GRAND AVE","Q","GOOD","2019","$14.8M"],[40.740670658,-73.8907357609,"e","45TH AVE","Q","VGOOD","2019","$10.8M"],[40.7793578861,-73.9875298832,"e","W 70TH ST","M","VGOOD","2019","$77.7M"],[40.6938520679,-73.9991950569,"g","278I EB (B.Q.E.)","B","GOOD","2019","$11.5M"],[40.6428325088,-74.0724802976,"f","BUS STA ENTR RAMP","S","FAIR","2019","$177.0M"],[40.7162541554,-73.886948565,"g","JUNIPER BLVD SO","Q","GOOD","2019","$40.5M"],[40.7287283872,-73.8855452757,"g","57TH AVE","Q","GOOD","2019","$10.3M"],[40.7224355687,-73.8846954,"e","ELIOT AVE","Q","VGOOD","2019","$13.3M"],[40.7121890571,-73.8889117103,"e","METROPOLITAN AVE","Q","VGOOD","2019","$83.9M"],[40.7794656451,-73.9878683286,"e","RIVERSIDE DRIVE SOUTH","M","VGOOD","2019","$310.7M"],[40.6705352388,-73.8474924393,"f","WHITELAW PED BRDG","Q","FAIR","2019","$24.8M"],[40.6382246858,-73.8785762342,"e","BSHP","B","VGOOD","2019","$180.4M"],[40.778000089,-73.9881984882,"e","W 68TH ST","M","VGOOD","2019","$24.2M"],[40.7415348629,-73.9494065502,"g","21ST ST","Q","GOOD","2019","$79.2M"],[40.7521796042,-73.9776320234,"f","PARK AVE VIADUCT","M","FAIR","2019","$127.3M"],[40.7392604293,-73.740763803,"f","MOTOR PKWY (PED)","Q","FAIR","2019","$3.6M"],[40.83092591659,-73.95123889537,"e","W 151ST ST PED -WEST RAMP","M","VGOOD","2019","$15.2M"],[40.828109526,-73.9339208375,"g","MACOMBS DAM BRIDGE","B","GOOD","2019","$990.0M"],[40.7566846144,-74.0001640252,"g","W 36TH ST","M","GOOD","2019","$24.6M"],[40.7480994219,-73.929804832,"e","HONEYWELL ST","Q","VGOOD","2019","$445.7M"],[40.7479194041,-73.9253410732,"e","39TH ST (SOUTH)","Q","VGOOD","2019","$153.4M"],[40.7489699107,-73.9251805137,"e","39TH ST (NORTH)","Q","VGOOD","2019","$216.9M"],[40.7570333879,-73.8386418494,"g","ROOSEVELT AVE","Q","GOOD","2019","$287.3M"],[40.8611280204,-73.8753134342,"f","FTBG N OF RTE 1 (HESTER BRDG)","B","FAIR","2019","$8.6M"],[40.836417703,-73.9485130862,"f","RIVERSIDE DRIVE","M","FAIR","2019","$835.5M"],[40.8739690766,-73.9106485311,"f","BROADWAY BRIDGE","B","FAIR","2019","$211.2M"],[40.8594262441,-73.9225013596,"f","PS-5 PED BRDG","M","FAIR","2019","$5.8M"],[40.8669870887,-73.9314763676,"f","RAMP TO N.B. HHP","M","FAIR","2019","$48.6M"],[40.8562362046,-73.7932165253,"e","CITY ISLAND ROAD","B","VGOOD","2019","$181.3M"],[40.7694170211,-73.9739430354,"f","PED BRDG OPP 65 ST","M","FAIR","2019","$10.3M"],[40.8734650788,-73.91128473,"g","NYCTA IRT","B","GOOD","2019","$87.8M"],[40.6924416969,-73.9999258237,"f","BROOKLYN PROMENADE","B","FAIR","2019","$207.8M"]];
+const PROJECTS = [
+  {
+    "name": "Construction of Gowanus CSO retention FAC Superfund Site",
+    "description": "CSO Facilities, bulkheads, pilots and other requirements to comply with Gowanus Canal Superfund Adminstrative Orders",
+    "borough": "Brooklyn",
+    "category": "Industrial Development",
+    "phase": "Design",
+    "budget": 1558300000.0,
+    "budget_label": "$1558M",
+    "forecast_completion": "07/07/2031"
+  },
+  {
+    "name": "Harlem River Drive Ramp Reconstruction (George Washington Bridge)",
+    "description": "Repair the Harlem River Drive Ramp to George Washington Bridge over Harlem River Drive Southbound (Trans-Manhattan Expressway), Manhattan",
+    "borough": "Manhattan",
+    "category": "Bridges, Streets and Roadways",
+    "phase": "Design",
+    "budget": 430583000.0,
+    "budget_label": "$431M",
+    "forecast_completion": "04/14/2028"
+  },
+  {
+    "name": "Queensboro Bridge Roadway Replacement over East River",
+    "description": "This project includes the replacement of the upper roadway's deck on the main bridge along with steel repairs, fire standpipes, and lighting upgrades.",
+    "borough": "Citywide",
+    "category": "Bridges, Streets and Roadways",
+    "phase": "Design",
+    "budget": 394997777.0,
+    "budget_label": "$395M",
+    "forecast_completion": "05/08/2019"
+  },
+  {
+    "name": "New Ferry Boat Construction",
+    "description": "Replace one Barberi class boat and the John F. Kennedy boat which are approaching the end of their useful lives with new Staten Island ferries. Replac",
+    "borough": "Citywide",
+    "category": "Ferries",
+    "phase": "Design",
+    "budget": 367250523.0,
+    "budget_label": "$367M",
+    "forecast_completion": "02/11/2020"
+  },
+  {
+    "name": "Bruckner Expressway Westchester Creek Bridge Reconstruction",
+    "description": "Replace the existing bridge with a new, wider double-leaf bascule bridge in the Bronx.",
+    "borough": "Bronx",
+    "category": "Bridges, Streets and Roadways",
+    "phase": "Design",
+    "budget": 335764502.49,
+    "budget_label": "$336M",
+    "forecast_completion": "11/20/2019"
+  },
+  {
+    "name": "The Reconstruction of The Lower Catskill Aqueduct",
+    "description": "Reconstruction of Aqueduct structures; Replacement of mechanical equipment; cleaning the aqueduct interior & rehabilitation & repair of cracks & leaks",
+    "borough": "Citywide",
+    "category": "Water Supply",
+    "phase": "Design",
+    "budget": 331260845.0,
+    "budget_label": "$331M",
+    "forecast_completion": "06/01/2025"
+  },
+  {
+    "name": "Manhattan Greenway: Harlem River",
+    "description": "The Manhattan Greenway Harlem River project, between West 125th Street and Swindler Cove, involves the creation of a park, greenway, and the reconstru",
+    "borough": "Citywide",
+    "category": "Parks",
+    "phase": "Design",
+    "budget": 309978000.0,
+    "budget_label": "$310M",
+    "forecast_completion": "04/15/2024"
+  },
+  {
+    "name": "Grand Street Bridge over Newtown Creek",
+    "description": "Replace the existing structure (swing-type bridge) with a new bridge; located between Gardner Avenue in Brooklyn and 47th Street in Queens.",
+    "borough": "Citywide",
+    "category": "Bridges, Streets and Roadways",
+    "phase": "Design",
+    "budget": 299438490.0,
+    "budget_label": "$299M",
+    "forecast_completion": "12/01/2026"
+  },
+  {
+    "name": "Catskill Aqueduct Repair and Rehabilitation",
+    "description": "Project to ensure the reliability of the 74 mile upper Catskill Aqueduct, including replacement of mechanical components, leak mitigation, and biofilm",
+    "borough": "Citywide",
+    "category": "Water Supply",
+    "phase": "Design",
+    "budget": 267212023.0,
+    "budget_label": "$267M",
+    "forecast_completion": "10/05/2018"
+  },
+  {
+    "name": "150 ST SPINE: PHASE II TRUNK SEWER AT BERGEN BASIN",
+    "description": "Southeast Queens 150th Street Spine, Phase II - Installation of a new double barrel trunk storm sewer that will run through JFK airport; approximately",
+    "borough": "Citywide",
+    "category": "Sewers",
+    "phase": "Design",
+    "budget": 207886000.0,
+    "budget_label": "$208M",
+    "forecast_completion": "09/13/2025"
+  },
+  {
+    "name": "Broadway Bridge over Harlem River Replacement",
+    "description": "Replace deteriorated members of lift span superstructure, concrete deck, lift electrical and mechanical systems, and fenders.",
+    "borough": "Bronx, Manhattan",
+    "category": "Bridges",
+    "phase": "Design",
+    "budget": 200270457.0,
+    "budget_label": "$200M",
+    "forecast_completion": "08/05/2019"
+  },
+  {
+    "name": "New Stapleton Waterfront: Phases 2 and 3",
+    "description": "Mixed-use residential community on Staten Island's North Shore.",
+    "borough": "Citywide",
+    "category": "Industrial Development",
+    "phase": "Design",
+    "budget": 199142346.0,
+    "budget_label": "$199M",
+    "forecast_completion": "11/01/2024"
+  },
+  {
+    "name": "West 59th Street Marine Transfer Station Construction, Phase 2",
+    "description": "Project 2 Scope: Refurbishment of the existing pier building including: repair of existing pier structure including pile caps and fendering; construct",
+    "borough": "Manhattan",
+    "category": "Sanitation",
+    "phase": "Construction Procurement",
+    "budget": 187830576.46,
+    "budget_label": "$188M",
+    "forecast_completion": "01/28/2018"
+  },
+  {
+    "name": "RED HOOK INTEGRATED FLOOD PROTECTION SYSTEM",
+    "description": "Reconstruction of Beard Street in the Red Hook neighborhood of Brooklyn, including raising the streets, reconstruction of roadway, curbs and sidewalk,",
+    "borough": "Citywide",
+    "category": "Public Safety and Criminal Justice",
+    "phase": "Design",
+    "budget": 184109000.0,
+    "budget_label": "$184M",
+    "forecast_completion": "02/14/2024"
+  },
+  {
+    "name": "Tompkinsville Esplanade",
+    "description": "Esplanade from Stapleton to the Lighthouse Museum and Pier for DOT Dockbuilders.",
+    "borough": "Citywide",
+    "category": "Parks",
+    "phase": "Design",
+    "budget": 162154665.0,
+    "budget_label": "$162M",
+    "forecast_completion": "07/31/2023"
+  },
+  {
+    "name": "Manhattan Greenway: East Midtown",
+    "description": "The East Midtown Waterfront Greenway project involves the creation of a waterfront esplanade between East 53rd and East 59th Streets.",
+    "borough": "Citywide",
+    "category": "Parks",
+    "phase": "Design",
+    "budget": 154840000.0,
+    "budget_label": "$155M",
+    "forecast_completion": "08/31/2022"
+  },
+  {
+    "name": "150Th St Spine Phase 1 Storm Sewer At Bergen Basin",
+    "description": "SOUTHEAST QUEENS 150TH STREET SPINE, PHASE 1.  DOUBLE BARREL STORM SEWER AND OUTFALL AT BERGEN BASIN FOR THE 150TH STREET TRUNK SEWER WHICH SHARES AN ",
+    "borough": "Citywide",
+    "category": "Sewers",
+    "phase": "Design",
+    "budget": 152453000.0,
+    "budget_label": "$152M",
+    "forecast_completion": "06/30/2025"
+  },
+  {
+    "name": "20th Avenue Storm and Sanitary Sewer Construction",
+    "description": "Storm and sanitary sewers in 20th Ave  between 126th Street and U.S. Bulkhead Line, etc. Water main works.",
+    "borough": "Queens",
+    "category": "Sewers",
+    "phase": "Design",
+    "budget": 141876000.0,
+    "budget_label": "$142M",
+    "forecast_completion": "06/30/2017"
+  },
+  {
+    "name": "Westchester Avenue Bridge over Hutch River Parkway Rehabilitation",
+    "description": "Repair abutments, piers, approaches, and steel superstructure located in Pelham Bay, Bronx; replace reinforced concrete deck.",
+    "borough": "Bronx",
+    "category": "Bridges, Streets and Roadways",
+    "phase": "Design",
+    "budget": 123782169.0,
+    "budget_label": "$124M",
+    "forecast_completion": "03/22/2019"
+  },
+  {
+    "name": "Pier 35 & 36 Substructure Rehab",
+    "description": "The repair of 1,570 piles, concrete pile caps and beams in advanced/severe condition. The repairs will be addressed in three phases through year 2028.",
+    "borough": "Citywide",
+    "category": "Industrial Development",
+    "phase": "Construction Procurement",
+    "budget": 121736671.0,
+    "budget_label": "$122M",
+    "forecast_completion": "08/01/2027"
+  }
+];
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const RISK_COLOR = { c:'#ef4444', p:'#f97316', f:'#eab308', g:'#22c55e', e:'#0ea5e9', u:'#475569' };
+const RISK_LABEL = { c:'Critical', p:'Poor', f:'Fair', g:'Good', e:'Excellent', u:'Unknown' };
+const BOROUGH_FULL = { M:'Manhattan', B:'Brooklyn', Q:'Queens', S:'Staten Island', Bx:'Bronx' };
+const AGENCY_PORTAL = {
+  'NYC DOT': 'https://a069-prdap52.nyc.gov/APSApp/index.html',
+  'NYCEDC':  'https://edc.nyc/procurements',
+  'DSNY':    'https://www1.nyc.gov/site/dsny/business/doing-business.page',
+  'DEP':     'https://www.nyc.gov/site/dep/business/procurement.page',
+  'DDC':     'https://www.nyc.gov/site/ddc/business/bid-opportunities.page'
+};
+const CATEGORY_AGENCY = {
+  'Ferries': 'NYC DOT',
+  'Industrial Development': 'NYCEDC',
+  'Bridges, Streets and Roadways': 'NYC DOT',
+  'Bridges': 'NYC DOT',
+  'Sanitation': 'DSNY',
+  'Water Supply': 'DEP',
+  'Sewers': 'DEP',
+  'Parks': 'NYC DOT',
+  'Public Safety and Criminal Justice': 'DDC'
+};
+
+// Fake-but-realistic blurred intel data per project index (rotated)
+const INTEL_DATA = [
+  {env:'CEQR Type II — No further review', bids:'3 packages', headcount:'~85 workers', variance:'+2.1%'},
+  {env:'CEQR Type I — EIS completed', bids:'5 packages', headcount:'~210 workers', variance:'-0.4%'},
+  {env:'CEQR Type II — No further review', bids:'2 packages', headcount:'~60 workers', variance:'+5.7%'},
+  {env:'CEQR Type I — EAS in progress', bids:'4 packages', headcount:'~130 workers', variance:'+1.2%'},
+  {env:'CEQR Type II — No further review', bids:'6 packages', headcount:'~175 workers', variance:'+3.8%'},
+];
+const CONTACT_DATA = [
+  {name:'Katherine Morales', phone:'(212) 748-3291', email:'kmorales@dot.nyc.gov'},
+  {name:'James Okonkwo', phone:'(212) 312-1847', email:'jokonkwo@edc.nyc.gov'},
+  {name:'Patricia Suarez', phone:'(718) 595-2063', email:'psuarez@dep.nyc.gov'},
+  {name:'Michael Tam', phone:'(212) 839-5511', email:'mtam@dot.nyc.gov'},
+  {name:'Sandra Vega', phone:'(718) 765-3392', email:'svega@dsny.nyc.gov'},
+];
+
+function getIntel(idx) { return INTEL_DATA[idx % INTEL_DATA.length]; }
+function getContact(idx) { return CONTACT_DATA[idx % CONTACT_DATA.length]; }
+
+// ============================================================
+// MAP INIT
+// ============================================================
+const map = L.map('map', { center:[40.71,-73.98], zoom:11, zoomControl:false });
+L.control.zoom({ position:'bottomright' }).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  subdomains:'abcd', maxZoom:19
+}).addTo(map);
+
+const canvasRenderer = L.canvas({ padding:0.5 });
+
+// ============================================================
+// LAYER STATE
+// ============================================================
+let activeFilter = 'all';
+let nbiVisible = true;
+let cityVisible = true;
+let nbiMarkers = [];
+let cityMarkers = [];
+const nbiLayerGroup = L.layerGroup().addTo(map);
+const cityLayerGroup = L.featureGroup().addTo(map);
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getColor(code) { return RISK_COLOR[code] || RISK_COLOR.u; }
+
+function shadeColor(hex, pct) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0,Math.min(255,(n>>16)+pct));
+  const g = Math.max(0,Math.min(255,((n>>8)&0xff)+pct));
+  const b = Math.max(0,Math.min(255,(n&0xff)+pct));
+  return '#'+(0x1000000+r*0x10000+g*0x100+b).toString(16).slice(1);
+}
+
+function matchesFilter(code, scour, filter) {
+  if (filter === 'all') return true;
+  if (filter === 'critical') return code === 'c';
+  if (filter === 'poor') return code === 'p';
+  if (filter === 'scour') return scour && scour.toLowerCase().includes('critical');
+  return true;
+}
+
+function applyFilter() {
+  nbiMarkers.forEach(({ marker, code, scour }) => {
+    const show = matchesFilter(code, scour, activeFilter);
+    marker.setStyle({ opacity: show ? 1 : 0, fillOpacity: show ? 0.85 : 0 });
+  });
+  cityMarkers.forEach(({ marker, code }) => {
+    const show = matchesFilter(code, null, activeFilter);
+    marker.setStyle({ opacity: show ? 1 : 0, fillOpacity: show ? 0.85 : 0 });
+  });
+}
+
+// ============================================================
+// NBI LAYER
+// ============================================================
+BRIDGES_NBI.forEach((rec) => {
+  const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
+  const color = getColor(code);
+  const marker = L.circleMarker([lat, lon], {
+    radius: 7,
+    fillColor: color,
+    color: shadeColor(color, -30),
+    weight: 1.5,
+    fillOpacity: 0.85,
+    opacity: 1
+  });
+  const boroughName = BOROUGH_FULL[borough] || borough;
+  marker.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${boroughName}`, {
+    sticky: true, offset:[10,0]
+  });
+  marker.on('click', () => showAssetNBI(rec));
+  marker.addTo(nbiLayerGroup);
+  nbiMarkers.push({ marker, code, scour: scour||'' });
+});
+
+// ============================================================
+// CITY LAYER
+// ============================================================
+BRIDGES_CITY.forEach((rec) => {
+  const [lat, lon, code, name, borough, rating, year, budget] = rec;
+  const color = getColor(code);
+  const marker = L.circleMarker([lat, lon], {
+    renderer: canvasRenderer,
+    radius: 4,
+    fillColor: color,
+    color: shadeColor(color, -30),
+    weight: 1,
+    fillOpacity: 0.85,
+    opacity: 1
+  });
+  const boroughName = BOROUGH_FULL[borough] || borough;
+  marker.bindTooltip(`<strong>Bridge</strong> &middot; ${name}<br><span style="color:${color}">${RISK_LABEL[code]||'Unknown'}</span> &middot; ${boroughName}`, {
+    sticky: true, offset:[8,0]
+  });
+  marker.on('click', () => showAssetCity(rec));
+  marker.addTo(cityLayerGroup);
+  cityMarkers.push({ marker, code });
+});
+
+// ============================================================
+// LAYER TOGGLES
+// ============================================================
+function setupLayerToggle(rowId, tsId, layerGroup, getState, setState) {
+  document.getElementById(rowId).addEventListener('click', () => {
+    const on = !getState();
+    setState(on);
+    document.getElementById(tsId).classList.toggle('on', on);
+    if (on) map.addLayer(layerGroup); else map.removeLayer(layerGroup);
+  });
+}
+setupLayerToggle('toggle-nbi-row','ts-nbi', nbiLayerGroup, ()=>nbiVisible, v=>{ nbiVisible=v; });
+setupLayerToggle('toggle-city-row','ts-city', cityLayerGroup, ()=>cityVisible, v=>{ cityVisible=v; });
+
+// ============================================================
+// FILTER BUTTONS
+// ============================================================
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilter();
+  });
+});
+
+// ============================================================
+// PANEL / TAB STATE
+// ============================================================
+let activeTab = 'pipeline'; // 'pipeline' | 'bridges'
+let prevPanel = 'panel-pipeline'; // track what to go back to
+
+const ALL_PANELS = ['panel-pipeline','panel-bridges','panel-asset','panel-project'];
+
+function showPanel(id) {
+  ALL_PANELS.forEach(p => {
+    const el = document.getElementById(p);
+    el.classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  document.getElementById('panel-scroll').scrollTop = 0;
+}
+
+// Tab click
+document.querySelectorAll('.panel-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeTab = tab.dataset.tab;
+    const panelId = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
+    prevPanel = panelId;
+    showPanel(panelId);
+  });
+});
+
+document.getElementById('asset-back').addEventListener('click', () => {
+  showPanel(prevPanel);
+});
+document.getElementById('project-back').addEventListener('click', () => {
+  showPanel(prevPanel);
+});
+
+// ============================================================
+// RENDER INTELLIGENCE PANEL
+// ============================================================
+const maxBudget = Math.max(...PROJECTS.map(p => p.budget));
+
+(function renderPipeline() {
+  const list = document.getElementById('project-list');
+  PROJECTS.forEach((proj, idx) => {
+    const pct = (proj.budget / maxBudget * 100).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'project-row';
+    row.innerHTML = `
+      <div class="project-row-top">
+        <span class="project-budget">${proj.budget_label}</span>
+        <span class="project-borough">${proj.borough}</span>
+      </div>
+      <div class="budget-bar-wrap"><div class="budget-bar-fill" style="width:${pct}%"></div></div>
+      <div class="project-name">${proj.name}</div>
+      <div class="project-meta">
+        <span>${proj.category} &middot; ${proj.phase} phase</span>
+        <span class="drill-link">View details &rarr;</span>
+      </div>`;
+    row.addEventListener('click', () => showProjectDetail(idx));
+    list.appendChild(row);
+  });
+})();
+
+// ============================================================
+// RENDER BRIDGE INSPECTIONS LIST
+// ============================================================
+(function renderBridgeList() {
+  // Sort by severity: c, p, f, g, e, u
+  const order = {c:0, p:1, f:2, g:3, e:4, u:5};
+  const sorted = [...BRIDGES_NBI].sort((a,b) => (order[a[2]]||5) - (order[b[2]]||5));
+  const top = sorted.slice(0, 40); // show top 40
+
+  const list = document.getElementById('bridge-list');
+  top.forEach(rec => {
+    const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
+    const color = getColor(code);
+    const label = RISK_LABEL[code] || 'Unknown';
+    const boroughName = BOROUGH_FULL[borough] || borough;
+    const row = document.createElement('div');
+    row.className = 'bridge-row';
+    row.innerHTML = `
+      <div class="bridge-cond-bar" style="background:${color}"></div>
+      <div class="bridge-row-body">
+        <div class="bridge-row-name">${name}</div>
+        <div class="bridge-row-meta">${boroughName} &middot; ${substructure || 'Not recorded'}</div>
+      </div>
+      <span class="cond-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;
+    row.addEventListener('click', () => showAssetNBI(rec));
+    list.appendChild(row);
+  });
+})();
+
+// ============================================================
+// ASSET DETAIL — NBI
+// ============================================================
+function conditionColor(val) {
+  if (!val) return '#475569';
+  const v = val.toLowerCase();
+  if (v.includes('critical') || v==='c') return '#ef4444';
+  if (v.includes('poor') || v==='p') return '#f97316';
+  if (v.includes('fair') || v==='f') return '#eab308';
+  if (v.includes('satisfactory') || v.includes('good')) return '#22c55e';
+  if (v.includes('excellent')) return '#0ea5e9';
+  return '#475569';
+}
+
+function uwWarn(dateStr) {
+  if (!dateStr || dateStr==='Not recorded') return true;
+  const p = dateStr.split('-');
+  if (p.length < 2) return true;
+  const d = new Date(parseInt(p[0]), parseInt(p[1])-1);
+  return (new Date(2026,5,11) - d) / (1000*60*60*24*365.25) > 6;
+}
+
+function showAssetNBI(rec) {
+  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
+  const [lat, lon, code, name, borough, substructure, lastUWI, scour] = rec;
+  const riskColor = getColor(code);
+  const riskLabel = RISK_LABEL[code] || 'Unknown';
+  const boroughName = BOROUGH_FULL[borough] || borough;
+  const scourLower = (scour||'').toLowerCase();
+  const isScourCrit = scourLower.includes('critical');
+  const isScourConcern = scourLower.includes('concern') || scourLower.includes('stable with');
+  const warn = uwWarn(lastUWI);
+
+  const nearbyProjects = PROJECTS.filter(p =>
+    p.borough==='Citywide' || p.borough.includes(boroughName)
+  ).slice(0,3);
+
+  let html = `
+    <div class="entity-tag">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>
+      Bridge Inspection &middot; Federal (NBI)
+    </div>
+    <div class="asset-header-row">
+      <div class="asset-name">${name}</div>
+      <span class="risk-badge" style="background:${riskColor}22;color:${riskColor};border:1px solid ${riskColor}44">${riskLabel.toUpperCase()}</span>
+    </div>
+    <div class="asset-sub">${boroughName} &middot; NYSDOT</div>
+
+    <div class="section-label">Condition</div>
+    <div class="detail-row">
+      <span class="detail-key">Substructure</span>
+      <span class="detail-val">
+        <span class="condition-dot" style="background:${conditionColor(substructure)}"></span>
+        ${substructure || 'Not recorded'}
+      </span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Last UW Inspection</span>
+      <span class="detail-val ${warn?'amber-text':''}">${lastUWI || 'Not recorded'}${warn?' ⚠':''}</span>
+    </div>
+
+    <div class="section-label">Scour</div>`;
+
+  if (isScourCrit) {
+    html += `<div class="scour-warning scour-critical">&#9888; Scour critical — structural monitoring required</div>`;
+  } else if (isScourConcern) {
+    html += `<div class="scour-warning">&#9888; ${scour}</div>`;
+  } else {
+    html += `<div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">${scour||'Not recorded'}</span></div>`;
+  }
+
+  if (nearbyProjects.length > 0) {
+    html += `<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
+    nearbyProjects.forEach(p => {
+      const i = PROJECTS.indexOf(p);
+      html += `<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,26)}${p.name.length>26?'&hellip;':''}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('asset-content').innerHTML = html;
+  showPanel('panel-asset');
+}
+
+// ============================================================
+// ASSET DETAIL — City
+// ============================================================
+function showAssetCity(rec) {
+  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
+  const [lat, lon, code, name, borough, rating, year, budget] = rec;
+  const riskColor = getColor(code);
+  const riskLabel = RISK_LABEL[code] || 'Unknown';
+  const boroughName = BOROUGH_FULL[borough] || borough;
+
+  const nearbyProjects = PROJECTS.filter(p =>
+    p.borough==='Citywide' || p.borough.includes(boroughName)
+  ).slice(0,3);
+
+  let html = `
+    <div class="entity-tag">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V12"/><path d="M18 22V12"/><path d="M2 12l10-9 10 9"/><path d="M2 12h20"/></svg>
+      Bridge Inspection &middot; City (DOT)
+    </div>
+    <div class="asset-header-row">
+      <div class="asset-name">${name}</div>
+      <span class="risk-badge" style="background:${riskColor}22;color:${riskColor};border:1px solid ${riskColor}44">${riskLabel.toUpperCase()}</span>
+    </div>
+    <div class="asset-sub">${boroughName} &middot; NYC DOT</div>
+
+    <div class="section-label">Condition</div>
+    <div class="detail-row">
+      <span class="detail-key">Overall Rating</span>
+      <span class="detail-val"><span class="condition-dot" style="background:${riskColor}"></span>${rating||'Not recorded'}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Year Built</span>
+      <span class="detail-val">${year||'Not recorded'}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-key">Replacement Cost Est.</span>
+      <span class="detail-val">${budget||'Not recorded'}</span>
+    </div>`;
+
+  if (nearbyProjects.length > 0) {
+    html += `<div class="section-label">Nearby Capital Projects</div><div class="chips-wrap">`;
+    nearbyProjects.forEach(p => {
+      const i = PROJECTS.indexOf(p);
+      html += `<span class="chip" onclick="showProjectDetail(${i})">&#x1F3D7; ${p.budget_label} &mdash; ${p.name.substring(0,26)}${p.name.length>26?'&hellip;':''}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('asset-content').innerHTML = html;
+  showPanel('panel-asset');
+}
+
+// ============================================================
+// PROJECT DETAIL
+// ============================================================
+function formatDate(dateStr) {
+  if (!dateStr) return 'TBD';
+  const [m,,y] = dateStr.split('/');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${y}`;
+}
+
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  const [m,d,y] = dateStr.split('/');
+  return new Date(parseInt(y),parseInt(m)-1,parseInt(d)) < new Date(2026,5,11);
+}
+
+function getAgency(proj) { return CATEGORY_AGENCY[proj.category] || 'NYC DOT'; }
+function getPortal(agency) { return AGENCY_PORTAL[agency] || 'https://www.nyc.gov/site/mocs/systems/about-passport.page'; }
+
+function showProjectDetail(idx) {
+  prevPanel = activeTab === 'pipeline' ? 'panel-pipeline' : 'panel-bridges';
+  const proj = PROJECTS[idx];
+  const agency = getAgency(proj);
+  const portal = getPortal(agency);
+  const overdue = isOverdue(proj.forecast_completion);
+  const dateStr = formatDate(proj.forecast_completion);
+  const dateDisplay = overdue
+    ? `<span class="overdue">${dateStr} (overdue)</span>`
+    : dateStr;
+
+  // Nearby poor NBI assets
+  const projBoroughs = proj.borough==='Citywide'
+    ? ['M','B','Q','S','Bx']
+    : Object.entries(BOROUGH_FULL).filter(([k,v])=>proj.borough.includes(v)).map(([k])=>k);
+  const poorAssets = BRIDGES_NBI.filter(r=>(r[2]==='c'||r[2]==='p')&&projBoroughs.includes(r[4])).slice(0,4);
+
+  const intel = getIntel(idx);
+  const contact = getContact(idx);
+
+  let html = `
+    <div class="entity-tag">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      Capital Project
+    </div>
+    <div class="project-detail-name">${proj.name}</div>
+    <div class="project-detail-meta">${proj.budget_label} &middot; ${proj.borough} &middot; ${proj.category}</div>
+    <p class="description-text">${proj.description}</p>
+
+    <div class="section-label">Details</div>
+    <div class="detail-row"><span class="detail-key">Phase</span><span class="detail-val">${proj.phase}</span></div>
+    <div class="detail-row"><span class="detail-key">Forecast completion</span><span class="detail-val">${dateDisplay}</span></div>
+    <div class="detail-row"><span class="detail-key">Agency</span><span class="detail-val">${agency}</span></div>`;
+
+  if (poorAssets.length > 0) {
+    html += `<div class="section-label">Nearby Assets in Poor Condition</div><div class="chips-wrap">`;
+    poorAssets.forEach(rec => {
+      const recIdx = BRIDGES_NBI.indexOf(rec);
+      const col = getColor(rec[2]);
+      html += `<span class="chip" onclick="showAssetNBI(BRIDGES_NBI[${recIdx}])"><span class="condition-dot" style="background:${col};min-width:8px"></span>${rec[3].substring(0,22)}${rec[3].length>22?'&hellip;':''}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  // Detailed Project Intelligence (blurred)
+  html += `
+    <hr class="divider">
+    <div class="intel-section">
+      <div class="intel-section-header">
+        <span class="intel-section-title">Detailed Project Intelligence</span>
+        <span class="coming-soon-badge">Coming Soon</span>
+      </div>
+      <div class="intel-row">
+        <span class="intel-key">Environmental Review</span>
+        <span class="intel-val">${intel.env}</span>
+      </div>
+      <div class="intel-row">
+        <span class="intel-key">Bid Package Count</span>
+        <span class="intel-val">${intel.bids}</span>
+      </div>
+      <div class="intel-row">
+        <span class="intel-key">Est. Contractor Headcount</span>
+        <span class="intel-val">${intel.headcount}</span>
+      </div>
+      <div class="intel-row">
+        <span class="intel-key">Budget Variance</span>
+        <span class="intel-val">${intel.variance}</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="section-label" style="margin-top:0">Contact &amp; Procurement</div>
+    <div class="contact-section">
+      <div class="contact-row">
+        <span class="contact-key">Lead Agency</span>
+        <span class="contact-val">${agency}</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-key">Procurement portal</span>
+        <span class="contact-val"><a href="${portal}" target="_blank" style="color:var(--accent);font-size:11px;text-decoration:none">Open &rarr;</a></span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-key">Project Manager</span>
+        <span class="contact-val-blurred">${contact.name}</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-key">Phone</span>
+        <span class="contact-val-blurred">${contact.phone}</span>
+      </div>
+      <div class="contact-row">
+        <span class="contact-key">Email</span>
+        <span class="contact-val-blurred">${contact.email}</span>
+      </div>
+      <div class="pro-note">Full contact directory available in Tidemark Pro</div>
+    </div>
+    <div style="height:24px"></div>`;
+
+  document.getElementById('project-content').innerHTML = html;
+  showPanel('panel-project');
+}
+</script>
+</body>
+</html>
