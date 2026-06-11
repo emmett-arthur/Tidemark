@@ -240,6 +240,28 @@ html, body {
 .leaflet-tooltip::before { display: none !important; }
 
 
+/* ── INFO BUTTON (all breakpoints) ── */
+#info-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface-el); border: 1px solid var(--border);
+  color: var(--accent); font-size: 16px; cursor: pointer; flex-shrink: 0;
+}
+
+/* Desktop info overlay — dropdown from header right */
+#info-overlay {
+  display: none;
+  position: fixed; top: calc(var(--header-h) + 8px); right: 20px;
+  width: 340px; z-index: 600;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+#info-overlay.visible { display: block; }
+
+/* Hide mobile-only sheet elements on desktop */
+#sheet-trigger { display: none; }
+#sheet-topbar { display: none; }
+
 /* ══════════════════════════════════
    MOBILE
    ══════════════════════════════════ */
@@ -267,22 +289,12 @@ html, body {
   .layer-label { font-size: 10px; }
   #legend { display: none; }
 
-  /* ── INFO BUTTON & OVERLAY ── */
-  #info-btn {
-    display: flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px; border-radius: 50%;
-    background: var(--surface-el); border: 1px solid var(--border);
-    color: var(--accent); font-size: 17px; cursor: pointer;
-    flex-shrink: 0;
-  }
+  /* ── INFO OVERLAY (mobile: full-width banner below header) ── */
   #info-overlay {
-    display: none;
     position: absolute; top: var(--header-h); right: 0; left: 0;
-    z-index: 500;
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    width: auto; border-radius: 0; border-left: none; border-right: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   }
-  #info-overlay.visible { display: block; }
 
   /* ── SHARED PILL STYLE ──── */
   .sheet-pill {
@@ -298,7 +310,7 @@ html, body {
 
   /* ── SHEET TRIGGER (floating above map, shown when sheet closed) ── */
   #sheet-trigger {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
     z-index: 400;
   }
   #sheet-trigger.hidden { display: none; }
